@@ -1,5 +1,6 @@
 # ExpertPythonProgramming
-Collection of Materials from Group Study of "Expert Python Programming" by Tarek Ziadé.
+
+Collection of Materials from Group Study of "Programming in Python 3" by Mark Summerfield.
 
 **Topics**
 - Iterators, Generators, and Decorators
