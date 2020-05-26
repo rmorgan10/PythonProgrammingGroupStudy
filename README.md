@@ -1,4 +1,4 @@
-# ExpertPythonProgramming
+# PythonProgrammingGroupStudy
 
 Collection of Materials from Group Study of "Programming in Python 3" by Mark Summerfield.
 
