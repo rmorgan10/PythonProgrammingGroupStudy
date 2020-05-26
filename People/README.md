@@ -2,7 +2,7 @@
 
 Code developed by individual members is stored here.
 
-** Links **
+**Links**
 - [Abby](https://github.com/rmorgan10/PythonProgrammingGroupStudy/tree/master/People/Abby) [:octocat:](https://github.com/abigailbishop/)
 - [Alex](https://github.com/rmorgan10/PythonProgrammingGroupStudy/tree/master/People/Alex) [:octocat:](https://github.com/apizzuto/)
 - [Brent](https://github.com/rmorgan10/PythonProgrammingGroupStudy/tree/master/People/Brent) [:octocat:](https://github.com/bamode/)
