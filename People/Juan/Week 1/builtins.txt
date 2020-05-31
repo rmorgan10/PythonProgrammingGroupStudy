@@ -1,0 +1,153 @@
+ArithmeticError : Base class for errors arising due to arithmetic issues
+AttributeError : Raised when attribute reference or assignment fails
+BlockingIOError : Raised when an operation would block an an object set for non-blocking operation
+BytesWarning : Base class for warnings related to bytes and bytearray
+BufferError : Raised when a buffer related operation cannot be performed
+ChildProcessError : Raised when an operation on a child process failed.
+ConnectionError : Base class for connection related issues
+ConnectionResetError : Raised when a connection is reset by the peer
+EOFError : Raised when the input() function hits the end-of-file (EOF) conditions without reading any data.
+EnvironmentError : Alias of OS error. Kept for compatibility with Python 3.3
+False : Not True. Bool(0)
+FileNotFoundError : Raised when a file or directory is requested but does not exist
+FutureWarning : Base class for warning about deprecated features when those warnings are intended for end users of applications using python
+IOError : Alias of OSError. Kept for compatibility with python 3.3
+ImportWarning : Base class for warnings about probably mistakes in module imports
+IndexError : Raised when an index or slice is invalid
+IsADirectoryError : Raised when a file operation is requested on a directory
+KeyboardInterrupt : Raised when the user hits the interrupt key. Checks for this are made regularly during execution. Inherits from BaseException so is uncaught by code that catched Exception
+MemoryError : Raised when an operation runs out of memory but situation may still be rescued. Associated value is a string indicating what kind of (internal) op rand out of memory.
+NameError : Raised when a local or global name is not found. Only applies to unqualified names.
+NotADirectoryError : Raised when a directory operation is requested on a non-directory
+NotImplementedError : Derived from RuntimeError. In user defined base classes, abstract methods raise this exception when they require derived classes to override the methord, or while the class is being developed to indicate that the real implementation still needs to be added.
+OverflowError : Raised when the result of an arithmetic operation is too large to be represented.
+PermissionError : Raised when trying to run  an operation without the adequate access rights.
+RecursionError : Derived from RuntimeError. Raised when the interpreter detects that the maximum recursion depth is exceeded. See also : RecursionError
+ResourceWarning : Base class for warnings related to resource usage.
+RuntimeWarning : Base class for warnings about dubious runtime behavior
+StopIteration : Raised by next() and an iterators __next__() method to signal that there are no further items produced by the iterator.
+SyntaxWarning : Base class for warnings about dubious syntax
+SystemExit : Raised by sys.exit(). Inherits from BaseException instead or Exception so it's not caught by code that catches Exception. Causes python interpreter to exit without stack traceback.
+TimeoutError : Raised when a system function timed out at the system level.
+TypeError : Raised when an operator or function is applied to an object of inappropriate type.
+UnicodeDecodeError : Raised when a Unicode-related error occurs during decoding.
+UnicodeError : Raised when a Unicode-related encoding or decoding error occurs.
+UnicodeWarning : Base class for warnings related to Unicode
+ValueError : Raised when an operation or function recieves an argument that has the right type but an inappropriate value, and the situation is not described by a more precise exception
+WindowsError : Only Available on WindowsAlias to OSError
+__debug__ : Bool; True if python was not started with an -o option
+__import__ : Function, invoked by the <import> statement. __import__() can be used to import a module whose name is only known at runtime.
+__name__ : str; Value is obtained depending on how a script is executed. Notably the phrase <if __name__ == '__main__'> is often used to define behavior if a module is run vs imported.
+__spec__ : object; this attribute of a module exposes the ModuleSpec class which holds information about a module's import-system-related state.
+all : Function; checks if all items in a list are true
+ascii : Function; returns a string containing a printable representation of an object.
+bool : constructor; constructs a boolean object
+callable : Function; returns true if the object passed is callable
+classmethod : function; returns a class method for the given function or   decorator; defines a method in a class as a class method
+complex : constructor; crates a complex number object which represents a complex number as <Re> + j <Im>
+credits : callable; when printed or called prints the text of credits. See also - copyright
+dict : constructor; creates a dictionary object
+divmod : function; takes two objects and returns a tuple containing the quotient and remainder
+eval : function; parses the expression passed in and runs it as python code within the program
+exit : Raises the SystemExit exception quitting the program, alias for quit
+float : constructor; creates a float object representing an equivalent to a 32-bit double in c
+frozenset : immutable set object, see set
+globals : function; returns a dictionary containing variables defined in global namespace
+hash : function; returns the hash value of the object passed to it, if it has one
+hex : function; converts the int argument to the corresponding hexadecimal string
+input : function; reads input from the standard input and returns the input string. The first optional argument is a prompt for the user
+isinstance : function; takes two arguments, checks if the first argument is an instance of the class making up the second argument. Returns a boolean
+iter : function; returns an iterator for the object passed in, if the object is iterable (has an implemented __iter__() function)
+license : object; when called displays the full license text one screen at a time
+locals : function; updates and returns dictionary associated with the current local symbol table
+max : function; given a list of numeric types returns the value of the largest member, given many arguments returns the value of the largest numeric argument
+min : function; given a list of numeric types returns the value of the smallest member, given many arguments returns the value of the smallest member
+object : base class from which all objects inherit, holds built-in properties and methods which are default for all classes
+open : function; opens a file and returns the corresponding file object
+pow : function; takes two or three arguments (x,y,z). Returns x**y%z, if z is not provided just returns x**y
+property : function; defines the setter and getter for a class attribute prepended by __ or decorator; defines the getter and setter for the appropriate attribute
+range : function; creates a list of integers based on the argument(s)
+reversed : function; when given an iterable argument returns the reversed iterator of the given argument
+set : class; unordered and unindexed collection of items
+slice : function; returns a slice object that can be used to slice iterable objects
+staticmethod : function or decorator; assign a method to be static. Static methods are bound to class rather than instances of that class
+sum : function; when given an iterable argument returns the sum of the argument's members, when given many arguments, returns the sum of the arguments
+tuple : class; an immutable sequence of python objects
+vars : function; returns the __dict__ attribute of the given object. Acts like the locals() function if no argument is given
+AssertionError : Exception; raised when the assert statement fails
+BrokenPipeError : Raised when trying to write on a pipe while the other end has been closed, or trying to write on a socket which has been shutdown for writting.
+ConnectionAbortedError : Raised when a connection attempt has been aborted by the peer
+DeprecationWarning : Base class for warnings about deprecated features when those warnings are intended for others Python developers
+Exception : Base class from which non-sytem-exiting exceptions are derived. All user-defined exceptions should also be derived from this class
+FloatingPointError : Derives from ArithmeticError, not currently used
+ImportError : Raised when the import statement has trouble loading a module
+InterruptedError : Raised when a system call is interrupted by an incoming signal
+LookupError : Base class for the exceptions that are raised when a key or index used on a mapping or sequence is invalid
+None : Used to define a the null value or no value at all. Only member of the NoneType data type
+OSError : Raised when a system function returns a system-related error
+ProcessLookupError : Raised when a givn process does not exist
+RuntimeError : Raised when an error is detected that doesn't fall in any of the other categories.
+SyntaxError : Raised when the parser encounters a syntax error
+TabError : Raised when indentation contains an inconsistent use of tabs and spaces
+UnboundLocalError : Raised when a reference is made to a local variable in a function or method, but no value has been bound to that variable
+UnicodeTranslateError : Raised when a Unicode-related error occurs during translating
+Warning : Base class for warning categories
+__doc__ : property of all python classes. Short docstring describing the features of a class or function
+__package__ : module level attribute, when present, relative imports will be based on this attribute rather than the __name__ attribute
+any : takes an iterable, returns true is any member of the iterable is true, otherwise returns false
+breakpoint : function that can be called in code to set a breakpoint, applicable to most debugger packaged (eg pdb or web-pdb)
+chr : class; defines the chr variable which stores a single character
+copyright : attribute of a class that when called or printed prints the class' copyright information to the standard output
+dir : function, returns a list of valid attributes of the given object
+exec : executes the dynamically created object it is passed, which is either a string or code object
+format : function, returns the formatted version representation of the given value controlled by the format specifier. Similar to string.format method
+hasattr : function, returns true if an object has the given named attribute, false otherwise
+id : function, returns identity (unique integer) of an object that remains constant throughout that objects lifetime
+issubclass : function, returns true if the object is a subclass of a class
+list : object, mutable collection of python objects
+memoryview : object, exposes the c level buffer interface as a python object
+oct : function; takes an interger argument, returns the octal representation of that number as a string
+print : function; prints the argument to the standard output
+repr : function; returns an object's string description. Can be overwritten in user-defined classes as the __repr__ function
+setattr : function; sets the attribute of an object to the specified value
+str : object; defines an immutable sequence of characters
+type : function; returns the type object which describes from which class an object was instantiated
+BaseException : class; base class from which all exceptions are derived
+ConnectionRefusedError : Raised when a connection is reset by the peer
+FileExistsError : Raised when trying to create a file or directory which already exists
+IndentationError : Base class for syntax errors related to incorrect indentation
+ModuleNotFoundError : Raised by import when a module could not be located
+PendingDeprecationWarning : Base class for warnings about features which are obsolte and expected to be deprecated in the future, but are not currently deprecated
+StopAsyncIteration : must be raised by __anext__() method of an asynchronous iterator to stop the iteration
+True : boolean value correspoding to 1.
+UserWarning : Base class for warnings generated by user code
+__loader__ : module attribute set on imported modules by their loader. Returns the loader itself
+bin : converts and returns the binary equivalent string of a given integer
+compile : function; returns a python code object from the source argument
+enumerate : function; takes an iterable argument and returns a list of tuples formated (index, object) where the objects are members of the iterable and indexes correspond to their index withing the iterable
+getattr : function; returns the specified attribute of the passed in object
+int : class; defines the integer class
+map : function; takes a function and iterable as arguments, returns a map object after applying the function to each member of the iterable. the map object is an iterable itself
+ord : returns an integer representing the unicode character passed to the function
+round : function; rounds a numeric argument to the position (relative to the decimal place) specified by the second argument
+super : function; function that can be called from within a function inside a class, allows one to access functions of the base class from a subclass
+BytesWarning : Base class for warnings related to bytes and bytearray
+GeneratorExit : Raised when a generator or coroutine is closed
+NotImplemented : Special value which should be returned by the binary special methods to indicate that the operation is not implemented with respect to the other type
+SystemError : Raised when the interpreted finds an internal error, but the situation does not look so serious to cause it to abandon all hope. There is, after all, still Obi-Wan
+ZeroDivisionError : Raised when there is an attempt to divide by zero
+abs : function; returns the absolute value or modulus of the numeric argument
+delattr : removes an attribute if an object allows it
+help : function; provides helpful information on the function, object or class passed to it
+next : returns the next item from the iterator
+sorted : returns a sorted list from the items in an iterable
+Ellipsis : object that can be evoced when slicing a multi-dimensional list (such as a numpy array) by using <...> to indicate that all dimensions not explicitly sliced should be left alone. This functionality can be modified if the __getitem__ function of an iterable is overwritten
+ReferenceError : raised when a weak reference proxy is used to access an attribute of the referent after it has been garbage collected
+bytes : object which is an immutable sequence of unsigned 8 bit integers (0<= x < 256)
+len : function; returns the number of members within an iterable
+zip : function; takes multiple iterables as an argument and returns an iterable whose members are tuples whose members are the memmbers of the passed in iterables at the current index. All arguments must have the same length
+KeyError : raised when a mapping key is not found in the set of existing keys
+filter : method; constructs an iterator from elements of an iterable for which a function returns true
+quit : function; raises the SystemExit exception, quitting the program.
+UnicodeEncodeError : Raised when a Unicode-related error occurs during encoding
+__build_class__ : builds a class based on the arguments provided
