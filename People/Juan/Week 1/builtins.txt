@@ -22,7 +22,7 @@ NotADirectoryError : Raised when a directory operation is requested on a non-dir
 NotImplementedError : Derived from RuntimeError. In user defined base classes, abstract methods raise this exception when they require derived classes to override the methord, or while the class is being developed to indicate that the real implementation still needs to be added.
 OverflowError : Raised when the result of an arithmetic operation is too large to be represented.
 PermissionError : Raised when trying to run  an operation without the adequate access rights.
-RecursionError : Derived from RuntimeError. Raised when the interpreter detects that the maximum recursion depth is exceeded. See also : RecursionError
+RecursionError : Derived from RuntimeError. Raised when the interpreter detects that the maximum recursion depth is exceeded. See also - RecursionError
 ResourceWarning : Base class for warnings related to resource usage.
 RuntimeWarning : Base class for warnings about dubious runtime behavior
 StopIteration : Raised by next() and an iterators __next__() method to signal that there are no further items produced by the iterator.
