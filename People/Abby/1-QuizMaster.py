@@ -31,7 +31,7 @@ for i in range(numQs):
     randomNum = random.randint(0, len(fakes)-1)
     testedBuiltIn = reals[randomNum][0]
     potentialAnswers = [reals[randomNum][1], fakes[randomNum][1],
-                        fakes[randomNum][1], fakes[randomNum][1] ]
+                        fakes[randomNum][2], fakes[randomNum][3] ]
     random.shuffle(potentialAnswers)
     print("Question {0}: What is {1}?".format(i, testedBuiltIn))
     for a in potentialAnswers:
