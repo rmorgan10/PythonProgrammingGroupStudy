@@ -62,48 +62,6 @@ definitions. Then develop functionality to prompt the user with the correct answ
 wrong answers (perhaps chosen randomly from your bank of definitions). Collect the response for
 each question and output a quiz summary at the end. Be as extra as you please.
 
-###Builtins
->\_\_class__\
->\_\_contains__\
->\_\_delattr__\
->\_\_delitem__\
->\_\_dir__\
->\_\_doc__\
->\_\_eq__\
->\_\_format__\
->\_\_ge__\
->\_\_getattribute__\
->\_\_getitem__\
->\_\_gt__\
->\_\_hash__\
->\_\_init__\
->\_\_init_subclass__\
->\_\_iter__\
->\_\_le__\
->\_\_len__\
->\_\_lt__\
->\_\_ne__\
->\_\_new__\
->\_\_reduce__\
->\_\_reduce_ex__\
->\_\_repr__\
->\_\_reversed__\
->\_\_setattr__\
->\_\_setitem__\
->\_\_sizeof__\
->\_\_str__\
->\_\_subclasshook__\
->clear\
->copy\
->fromkeys\
->get\
->items\
->keys\
->pop\
->popitem\
->setdefault\
->update\
->values
 
 ## Pi Writing Contest
 Write a script to print as many digits of pi as possible. You will have to address the concepts of 

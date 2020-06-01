@@ -104,12 +104,12 @@ def formatted_for_synergy(message: str) -> str:
 	b_cyan = f"{36+10}"
 	b_white = f"{37+10}"
 
-	t_dwight = [t_yellow, t_white]
-	b_dwight = [b_black, b_blue]
+	t_dwight = [t_yellow, t_white, t_green]
+	b_dwight = [b_black, b_blue, b_purple]
 	rain_l = len(t_dwight)
 
 	g_message = ""
-	shift = 2
+	shift = 1
 	start = choice(range(rain_l))
 	for i, slc in enumerate(message.split("\n")):
 		col = t_dwight[(i+start) % rain_l]
