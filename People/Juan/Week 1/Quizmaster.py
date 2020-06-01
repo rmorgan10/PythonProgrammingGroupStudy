@@ -84,10 +84,12 @@ even an option. Well now you got it wrong! And look at what you did
 		input("press any key to continue")
 		os.system('cls')
 	tot_correct = sum(usr == cor for usr, cor in zip(user_answers, right_answers))
-	master = "You are a PyMaster!"
-	padawan = "You have much to learn young Pydawan."
-	usr_is = master if tot_correct > ques*passing else padawan
-	usr_is = "You complete buffoon!" if tot_correct == 0 else usr_is
+	if tot_correct == 0:
+		usr_is = "You must realize you are doomed."
+	elif tot_correct < ques*passing:
+		usr_is = "You have much to learn young Pydawan."
+	else:
+		usr_is = "You are a jedPy Master!"
 	print(f"You got {tot_correct} out of {ques} questions right.\n{usr_is}")
 
 
