@@ -238,6 +238,7 @@ def set_q_texts(
 				)
 	return correct, bltin, desc, prompt, responses
 
+
 def is_it_june() -> bool:
 	"""
 	determines if it is currently June in Madison, Wisconsin
@@ -251,5 +252,5 @@ def is_it_june() -> bool:
 
 if __name__ == '__main__':
 	descriptions = build_dict("builtins.txt")
-	quiz(descriptions, ques=3)
+	quiz(descriptions, ques=10)
 
