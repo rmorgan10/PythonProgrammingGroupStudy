@@ -1,8 +1,7 @@
 ## Quiz testing knowledge of python builtins
 ## 2020 June 1
 
-## TODO : Add answer options (1-4, so you type number not copy/paste ans)
-##        Actually work in all the built ins, real ans, and fake ans
+## TODO : Actually work in all the built ins, real ans, and fake ans
 
 import random
 
