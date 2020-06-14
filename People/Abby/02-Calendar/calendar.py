@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from datetime import date
 import csv
+import argparse
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 ### Some converters
@@ -184,24 +185,23 @@ def printCalendar(year: int, month: int, today: int):
 ### Some user input functions
 def askForDate():
     try: 
-        request = input('Pick a date ("MMDDYYYY" or ' +
+        request = input('\nPick a date ("MMDDYYYY" or ' +
                         '"done" to close calendar): \n').lower().strip()
     except: 
         print("I don't know what that means? Try again please.")
 
-    print('\n')
+    #print('\n')
     return request
 
 def askForCommand():
     try: 
         command = input('\nWhat would you like to do?\n' + 
                         '(type "h" for help or '+
-                        '"done" to finish editing/viewing this day) \n'
+                        '"done" to finish editing/viewing this day)  '
                        ).lower().strip()
     except: 
         print("I don't know what that means? Try again please.")
 
-    #print('\n')
     return command
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -216,7 +216,7 @@ def receiveCommands(year, month, day):
         if   command == possibleCommands[0][0]: 
             printHelp(0)
         elif command == possibleCommands[1][0]:
-            addAnEvent(1)
+            addAnEvent_user(1)
         elif command == possibleCommands[2][0]:
             deleteAnEvent(2, year, month, day)
         elif command == possibleCommands[3][0]:
@@ -235,7 +235,7 @@ def printHelp(index):
     for action in possibleCommands: 
         print(f"{action[0]}\t|{action[1]}\t|{action[2]}")
     
-def addAnEvent(index):
+def addAnEvent_user(index):
     print(f"\n\033[1m{possibleCommands[index][1]}:\033[0m")
     
     name = input("What is the event?\n")
@@ -243,18 +243,10 @@ def addAnEvent(index):
     year = int(thisDate[4:])
     month = int(thisDate[:2])
     day = int(thisDate[2:4])
-    thisDate = date(year, month, day)
     start = input("When will it begin? (hhmm, military time)\n")
     end = input("When will it end? (hhmm, military time)\n")
     
-    if year not in events.keys(): 
-        events[year] = {month: {day: [event(name, thisDate, start, end)]}}
-    elif month not in events[year].keys():
-        events[year][month] = {day: [event(name, thisDate, start, end)]}
-    elif day not in events[year][month].keys():
-        events[year][month][day] = [event(name, thisDate, start, end)]
-    else: 
-        events[year][month][day].append(event(name, thisDate, start, end))
+    addAnEvent(name, year, month, day, start, end)
     print(f"{name} added.")
     
 def deleteAnEvent(index, year, month, day):
@@ -286,20 +278,21 @@ def viewAnEvent(index, day):
     print(f"\n\033[1m{possibleCommands[index][1]}:\033[0m")
     
     eventNum = -1 + int(
-            input("Which event would you like to view? (give the number)\n"))
-    print('\n')
+            input("Which event would you like to view? (give the number)  "))
+#    print('\n')
     
     if day == []: 
         print("No events this day.")
     elif eventNum in range(len(day)):
         printEvent(day[eventNum])
-        print("\n")
     else: 
-        print("That date doesn't exist.")
+        #TODO: Check if date doesn't exist
+        print('Event doesn\'t exist. Type "c" to see possible event numbers.')
+
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 ### Some Event things        
-class event():
+class event:
     def __init__(self, name, date, start, end):
         self.name = name
         self.date = date
@@ -308,24 +301,72 @@ class event():
         
     def store(self): 
         return f"{self.name};{datePrint(self.date)};{self.start};{self.end}"
-    
-    def read(self, string):
-        string = string.split(";")
-        self.name = string[0]
-        self.date = string[1]
-        self.start = string[2]
-        self.end = string[3]
         
 def printEvent(event): 
-    print(event.name)
-    
     #TODO: Make the date print nicer
-    print(f'{datePrint(event.date)}:' + 
+    print(f'\n\033[1m{event.name}\033[0m\n' +
+          f'  {datePrint(event.date)}:' + 
           f' {timePrint(event.start)} - {timePrint(event.end)}')
+
+def loadEvents(fileName): 
+    f = open(fileName, "r")
+    for x in f:
+        string = x.strip().split(";")
+        name = string[0]
+        thisDate = string[1]
+        year = int(thisDate[:4])
+        month = int(thisDate[5:7])
+        day = int(thisDate[-2:])
+        thisDate = date(year, month, day)
+        start = string[2]
+        end = string[3]
+        
+        addAnEvent(name, year, month, day, start, end)
+    f.close()
+
+def addAnEvent(name, year, month, day, start, end): 
+    thisDate = date(year, month, day)
+    if year not in events.keys(): 
+        events[year] = {month: {day: [event(name, thisDate, start, end)]}}
+    elif month not in events[year].keys():
+        events[year][month] = {day: [event(name, thisDate, start, end)]}
+    elif day not in events[year][month].keys():
+        events[year][month][day] = [event(name, thisDate, start, end)]
+    else: 
+        events[year][month][day].append(event(name, thisDate, start, end))
+
+def saveEvents(dictionary, fileName):
+    with open(fileName, "w") as f:
+        for year, months in sorted(dictionary.items()):
+            for month, days in sorted(months.items()):
+                for day, events in sorted(days.items()):
+                    for event in events: 
+                        print(event.store(), file=f)
 
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 #Actual Program   
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--fileName', type=str, default="savedEvents.txt",
+                    help='Name/path for/to event storage file.')
+args = parser.parse_args()
+
+events = {}
+fileName = args.fileName
+if os.path.exists(fileName): 
+    loadEvents(fileName)
+    print("Calendar loaded.")
+elif "yes" == input(f"Can't find {fileName}. Did you mean a different file?" + 
+               "(yes or no): ").lower(): 
+    fileName = input("Alright, input the correct file name: ")
+    while not os.path.exists(fileName):
+        if "stop" != input(f"Still can't find {fileName}. Try again or type" + 
+               '"stop" to initalize empty calendar. \n').lower(): 
+            fileName = input("Please input the correct file name: ")
+    print("Preparing Calendar")
+else: 
+    print("Alright. Starting empty calendar")
 
 possibleCommands = [
         ["h","Help", "Prints all possible, valid commands."],
@@ -335,33 +376,11 @@ possibleCommands = [
         ["c", "Clear", "Clear the screen and show the calendar."]
     ]
 
-events = {
-    2020: {
-        1: {
-            7: [
-                event("Forrest's Birthday", date(2020, 1, 7), "0000", "2359"),
-                event("Class", date(2020, 1, 7), "1000", "1100")
-                ],
-            30: [event("Someone's Birthday", date(2020, 1, 30), "0000", "2359")],
-            27: [event("Someone Else's Birthday", date(2020, 1, 27), "0000", "2359")]
-            }
-        ,
-        5: {
-            30: [event("Mama's Birthday", date(2020, 5, 30), "0000", "2359")]
-            }
-        }
-        ,
-    2019: {
-        8: {
-            28: [event("Sarah's Birthday", date(2019, 8, 28), "0000", "2359")]
-        }
-    }
-}
-
 os.system("clear")
 request = askForDate()
 
 while request != "done":
+    #TODO: Add a today option
     try: 
         month = int(request[:2])
         day   = int(request[2:4])
@@ -376,3 +395,5 @@ while request != "done":
     else: 
         receiveCommands(year, month, day)
     request = askForDate()
+    
+saveEvents(events, fileName)
