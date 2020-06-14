@@ -1,8 +1,10 @@
 # Objects used in calendar.py
 
 from benedict import benedict
+import datetime
 import os
 import pandas as pd
+import sys
 
 class Event():
     """
@@ -13,9 +15,9 @@ class Event():
         Store event properties as attributes.
         
         :param name: str, title of event
-        :param date: datetime, date of event
-        :param time: datetime, time of event in US Central Time
-        :param duration: timedelta, a length of time for the event to last
+        :param date: datetime.date, date of event
+        :param time: datetime.time, time of event in US Central Time
+        :param duration: datetime.timedelta, a length of time for the event to last
         :param location: str, location of event
         :param description: str, description of event
         """
@@ -199,4 +201,195 @@ class Calendar():
 
         return
 
+class Display():
+    """
+    The Display Class. Interacts with the user.
+    """
+    def __init__(self, calendar):
+        """
+        Instantiates a display.
 
+        :param calendar: calendar, an instance of the Calendar class
+        """
+        self.calendar = calendar
+        self.date = datetime.date.today()
+        self._get_week()
+
+        self.month_map = {1: 'January', 2: 'February', 3: 'March', 4: 'April',
+                          5: 'May', 6: 'June', 7: 'July', 8: 'August',
+                          9: 'September', 10: 'October', 11: 'November',
+                          12: 'December'}
+
+        return
+
+    def update_date(self, date):
+        """
+        Store the current date as a datetime object.
+
+        :param date: datetime, the new date to set the calendar to.
+        """
+        self.date = date
+        return
+    
+    def _get_week(self):
+        """
+        Determine the day of the previous sunday. If previous month,
+        use negative numbers.
+        """
+        # Switch convention to have Sunday = 0
+        self.weekday = self.date.weekday + 1
+        self.week_start = self.date - datetime.timedelta(days=self.weekday)
+        self.week_end = self.week_start	+ datetime.timedelta(days=6)
+
+        return
+
+    def menu(self):
+        """
+        Displays a menu of options for the user and records choice.
+
+        :return choice: str, the choice selected by the user.
+        """
+
+        display_menu = """
+        a) view next year  b) view previous year  c) view current month
+        d) view next month  e) view previous month  f) view current day
+        g) view next day  h) view previoius day  i) view current week
+        j) view next week  k) view previous week
+        l) add an event  m) remove an event  n) edit an event
+        o) view event details  q) quit
+        """
+        
+        print(display_menu)
+        choice = input(">> ").strip().lower()
+        while choice not in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                             'k', 'l', 'm', 'n', 'o', 'q']:
+            print("You must select one of the menu options.")
+            choice = input(">> ").strip().lower()
+
+        return choice
+
+    def action_quit(self):
+        """
+        User has chosen to quit. Save events and termintate program.
+        """
+        self.calendar._save_events()
+        os.system('clear')
+        sys.exit()
+
+    def action_add_event(self):
+        """
+        User has chosen to add an event. Prompt user for information
+        and create an Event in the Calendar.
+        """
+        os.system('clear')
+
+        #TODO
+        # - promept user for all atributes of a new event
+        # - add the new event to the calendar
+        
+        #change date to be the date of the new event
+        
+        return
+
+    def _select_event(self):
+        #TODO
+        # - prompt user for event info
+        # - isolate event in calendar
+        return
+    
+    def action_remove_event(self):
+        os.system('clear')
+        #TODO
+        # - call _select_event to find the event in question
+        # - delete the event from the calendar
+        return
+
+    def action_edit_event(self):
+        os.system('clear')
+        #TODO
+        # - call _select_event to find the event in question
+        # - edit the event from the calendar 
+        return
+
+    def action_view_month(self):
+        os.system('clear')
+        print(self.month_map[self.date.month] + ' ' + str(self.date.year))
+        #TODO
+        # - display a grid layout of the month
+        # - highlight days with events
+        return
+
+    def action_view_week(self):
+        os.system('clear')
+        #TODO
+        # - display a grid layout of all events during the week
+        return
+
+    def action_view_day(self):
+        os.system('clear')
+        #TODO
+        # - display a tabular layout of all events during the day
+        return
+
+    def action_print_event_details(self):
+        os.system('clear')
+        #TODO
+        # - call _select_event to get the event in question
+        # - print out all info about the event
+        return
+
+    def action_increment_year(self):
+        """
+        Add 1 to the current year.
+        """
+        self.update_date(self.date + datetime.timedelta(years=1))
+        return
+
+    def action_deincrement_year(self):
+        """
+        Subtract 1 from current year.
+        """
+        self.update_date(self.date - datetime.timedelta(years=1))
+        return
+
+    def action_increment_month(self):
+        """
+        Add 1 to the current month.
+        """
+        self.update_date(self.date + datetime.timedelta(months=1))
+        return
+
+    def action_deincrement_month(self):
+        """
+        Subtract 1 from current month.
+        """
+        self.update_date(self.date - datetime.timedelta(months=1))
+        return
+
+    def action_increment_week(self):
+        """
+        Add 7 to the current day.
+        """
+        self.update_date(self.date + datetime.timedelta(days=7))
+        return
+
+    def action_deincrement_week(self):
+        """
+        Subtract 7 from current day.
+        """
+        self.update_date(self.date - datetime.timedelta(days=7))
+        return
+        
+    def action_increment_day(self):
+        """
+        Add 1 to the current day.
+        """
+        self.update_date(self.date + datetime.timedelta(days=1))
+        return
+
+    def action_deincrement_day(self):
+        """
+        Subtract 1 from current day.
+        """
+        self.update_date(self.date - datetime.timedelta(days=1))
+        return
