@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
 from typing import List, Dict
-from datetime import date
+from datetime import date, datetime
 from calendar import monthrange
 import os
+from typing import TypeVar, Tuple
+from benedict import benedict
+
+from Events import Event
 from CalendarErrors import BreakoutError, MainError
-from Prompt import prompt_user_date, parse_user_date
+from Prompt import prompt_user_date, parse_user_date, prompt_user_time
 
 """
 Should print a calendar to the terminal/console output and prompt the user to
@@ -13,6 +17,8 @@ input some number of possible commands to:
 * scroll from month to month
 * make, read, and modify events on certain days
 """
+
+DateTypes = TypeVar("DateTypes", date, datetime)
 
 
 class Calendar:
@@ -80,8 +86,22 @@ class Calendar:
 	"""
 
 	def __init__(self):
-		# Store events as a dict of names and dates
-		self.events = {}  # TODO : Modify to work like Rob's code
+		"""
+		Constructor for the Calendar
+
+		Stores events as a nested dictionary with dates as keys, lastly with a names dict.
+		Structure:
+		self.events = {
+			year(int) : {
+				month(int) : {
+					day(int) : {
+						name(int) : (Event)
+					}
+				}
+			}
+		}
+		"""
+		self.events = benedict()
 		self.today = date.today()
 
 	def command_loop(self):
@@ -173,63 +193,96 @@ class Calendar:
 			else:
 				name = input(f"What is the name of the event to be {Calendar.VERB[cmd]}")
 		if cmd == self.NEW:
-			self.events.update({name: calendar_date})
-			input(f"new event created {self.print_event(name)}")
+			self.add_event(calendar_date, name)
+			input(f"new event created {self.get_event(calendar_date, name)}")
 		if cmd == self.MODIFY or cmd == self.READ:
-			if name in self.events.keys():  # and calendar_date == self.events[name]:
+			if name in self.find_events(calendar_date).keys():
 				if cmd == self.MODIFY:
-					self.modify_event(name)
+					self.get_event(calendar_date, name).modify()
+					input(f"Modified event : {self.get_event(calendar_date, name)}")
 				else:
-					input(self.print_event(name))
+					input(self.get_event(calendar_date, name))
 			else:
 				input("The event you described does not exist. Back to main menu ")
-				raise MainError
 
-	# TODO : Move following two functions to Events.py
-	def print_event(self, name: str):
+	@staticmethod
+	def ind_from_date(calendar_date: DateTypes, name: str = None):
 		"""
-		Returns a string describing the event in question
-		"""
-		ev_date = self.events[name]
-		yr, mn, dy = (ev_date.year, ev_date.month, ev_date.day)
-		return f"{name} : {yr} / {mn:2} / {dy:2}"
-
-	def modify_event(self, name: str):
-		"""
-		Prompt user and get their input to modify the event passed in
 		Args:
-			name : name of event to be modified
+			calendar_date : date to be used for indexing
+			name : optional. Tacked on to return in included
+		Returns:
+			year (int), month (int), day (int), name (str)
 		"""
-		info_str = f"""
-Let's modify the event below.
-{self.print_event(name)}		
-To return to the main menu enter Q,
-To change date enter D,
-To change name enter N,
-What would you like to do?:
-"""
-		# Get the user's command
-		cmd = ""
-		while True:
-			mod_input = input(info_str)
-			try:
-				cmd = mod_input[0]
-			except IndexError:
-				continue
-			if cmd in ["Q", "D", "N"]:
-				break
+		if name is not None:
+			return calendar_date.year, calendar_date.month, calendar_date.day, name
+		else:
+			return calendar_date.year, calendar_date.month, calendar_date.day
+
+	def get_event(self, calendar_date: DateTypes, name: str) -> Event:
+		"""
+		Gets an event from a name and a date
+		Args:
+			calendar_date : date of the event
+			name : name of the event:
+
+		Returns:
+			The event found. Or None if none are found
+		"""
+		try:
+			ev = self.events[self.ind_from_date(calendar_date, name)]
+		except KeyError:
+			ev = None
+		return ev
+
+	def find_events(self, calendar_date: DateTypes) -> Dict:
+		"""
+		finds all events that occur on calendar_date and returns them
+		Args:
+			calendar_date : date or datetime object where we're looking for events
+		Returns:
+			daily events : dictionary of events occurring on that day, empty dict if there are none
+		"""
+		try:
+			daily_events = self.events[self.ind_from_date(calendar_date)]
+		except KeyError:
+			daily_events = {}
+
+		return daily_events
+
+	def add_event(self, calendar_date: DateTypes, name: str):
+		"""
+		Adds an event to the calendar
+		Args:
+			calendar_date : date of the new event
+			name : name of that event
+		"""
+		while name in self.find_events(calendar_date).keys():
+			overwrite = input(
+				f"Another event is named {name} on that date. Do you wish to overwrite it? (Y/n) : "
+				f"Other event : {self.get_event(calendar_date, name)}"
+			)
+			overwrite = overwrite.upper() != "N"
+			if not overwrite:
+				name = input(f"Please enter a new name for the event : ")
 			else:
-				print("Invalid command, try again.")
-				continue
-		if cmd == "Q":
-			raise MainError
-		elif cmd == "D":
-			print("Lets get the new date")
-			new_date = self.prompt_date()
-			self.events[name] = new_date
-		elif cmd == "N":
-			new_name = input("What is the event's new name?")
-			self.events[new_name] = self.events.pop(name)
+				break
+
+		description = input("Give us a brief description of the event : \n")
+
+		if input("Do you wish to specify a time? (y/N)").upper() != "Y":
+			self.events[self.ind_from_date(calendar_date, name)] = Event(
+				calendar_date,
+				name,
+				description,
+			)
+		else:
+			self.events[self.ind_from_date(calendar_date, name)] = Event(
+				calendar_date,
+				name,
+				description,
+				prompt_user_time("What time do you want to set?")
+			)
 
 	def print_calendar(self):
 		"""
@@ -277,12 +330,7 @@ What would you like to do?:
 		# Find number of days in month
 		num_days = monthrange(self.today.year, self.today.month)[1]
 
-		# find all dates this month with events
-		first = date(self.today.year, self.today.month, 1)
-		last = date(self.today.year, self.today.month, num_days)
-		monthly_events = list(filter(lambda x: first <= x <= last, self.events.values()))
-		# turn it into a list of ints
-		monthly_events = [eventful_day.day for eventful_day in monthly_events]
+		monthly_events = list(self.events[self.today.year, self.today.month].keys())
 
 		cal_string = ""
 		# Print month and year

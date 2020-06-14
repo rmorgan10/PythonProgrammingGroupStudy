@@ -1,12 +1,13 @@
 """
-File to hold different kinds of event classes
+File to hold different kinds of event classes. Can be expanded, in principle. I'm not gonna be
+the one to do it though. Nu uh
 """
 from datetime import date, datetime, time
 from typing import TypeVar
 import os
 from CalendarErrors import MainError
-from Calendar import Calendar
-DateTypes = TypeVar("DateTypes", date, datetime)
+from Calendar import Calendar, DateTypes
+from Prompt import prompt_user_date, prompt_user_time
 
 
 class Event:
@@ -40,12 +41,12 @@ class Event:
 		# set the time of the event based on what is passed to the constructor
 		if isinstance(date_of_event, datetime):
 			self.time = self.date_of_event.time()
-		elif isinstance(date_of_event, date):  # This is true for the above case
+		elif isinstance(date_of_event, date):  # This is true for the above case, elif prevents error
 			if time_of_event is not None:
 				if isinstance(time_of_event, time):
 					self.time = time_of_event
 				else:
-					self.time = self.prompt_user_time()
+					self.time = prompt_user_time()
 			else:
 				self.time = time(0)  # Assume it lasts all day, therefore time of event is midnight
 		else:
@@ -74,8 +75,6 @@ What would you like to do?:
 			"D",
 			"T"
 		]
-		# TODO make this function work inside event class
-		# TODO: Implement T
 		# Get the user's command
 		cmd = ""
 		while True:
@@ -84,8 +83,8 @@ What would you like to do?:
 				cmd = mod_input[0].upper()
 				assert cmd in commands
 			except (IndexError, AssertionError):
-				print(f"""{mod_input} is not a valid command, should lead with one
-of the following (case insensitive): {commands}""")
+				print(f"{mod_input} is not a valid command, should lead with one of the\
+following commands (case insensitive):\n{commands}")
 				continue
 			else:
 				break
@@ -98,9 +97,9 @@ of the following (case insensitive): {commands}""")
 		elif cmd == "L":
 			self.description = input(f"What is {self.name}'s new description?")
 		elif cmd == "D":
-			self.update_date(Calendar.prompt_date(f"What is {self.name}'s new date?"))
+			self.update_date(prompt_user_date(f"What is {self.name}'s new date?"))
 		elif cmd == "T":
-			self.update_time(self.prompt_user_time(f"What is {self.name}'s new time?"))
+			self.update_time(prompt_user_time(f"What is {self.name}'s new time?"))
 		else:
 			print("You really shouldn't be here")
 
@@ -123,6 +122,11 @@ of the following (case insensitive): {commands}""")
 		self.month = self.date_of_event.month
 		self.day = self.date_of_event.day
 
-
-	def __repr__(self):  # TODO: overwrite this method to provide nice description of event
-		pass
+	def __repr__(self):
+		ev_str = f"{self.name} : {self.year}-{Calendar.MONTH[self.month]}-{self.day}"
+		if self.time == time(0):
+			ev_str += "\nAll day"
+		else:
+			ev_str += f"-{self.time.hour}:{self.time.minute}"
+		ev_str += f"\n{self.description}"
+		return ev_str
