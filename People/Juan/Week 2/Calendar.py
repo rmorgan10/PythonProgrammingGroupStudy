@@ -4,8 +4,8 @@ from typing import List, Dict
 from datetime import date
 from calendar import monthrange
 import os
-import sys
 from CalendarErrors import BreakoutError, MainError
+from Prompt import prompt_user_date, parse_user_date
 
 """
 Should print a calendar to the terminal/console output and prompt the user to
@@ -59,112 +59,31 @@ class Calendar:
 		12: "December"
 	}
 
+	MENU_STRING = f"""
+	Here's how to use the calendar!
+	To scroll to the next day enter         : {FORWARD}{DAY}
+	TO scroll to the previous day enter     : {BACKWARD}{DAY}
+	To scroll to the the next month enter   : {FORWARD}{MONTH}
+	To scroll to the previous month enter   : {BACKWARD}{MONTH}
+	To scroll to the next year enter        : {FORWARD}{YEAR}
+	To scroll to the previous year enter    : {BACKWARD}{YEAR}
+	To scroll to a date enter               : {SCROLL}<date in yyyy/mm/dd format>
+	To create an event enter                : {NEW}<event name>-<date in yyyy/mm/dd format>
+	To modify an event enter                : {MODIFY}<event name>-<date in yyyy/mm/dd format>
+	To read an event enter                  : {READ}<event name>-<date in yyyy/mm/dd format>
+	(To continue Press enter)
+	"""
+
 	def __init__(self):
 		# Store events as a dict of names and dates
 		self.events = {}  # TODO : Modify to work like Rob's code
 		self.today = date.today()
-
-	@staticmethod
-	def prompt_date(prompting_msg=None) -> date:
-		"""
-		Prompts the user for a valid date to draw out on the calendar
-		Returns:
-			valid datetime.date() object
-		"""
-		def get_info(msg: str, is_yr: bool):
-			initial_boilerplate = "Q to return to main menu"
-			while True:
-				inp_str = input(f"{initial_boilerplate}\n{msg}")
-				if inp_str.upper()[0] == Calendar.QUIT:
-					raise MainError()
-				if is_yr and len(inp_str) >= 4:
-					try:
-						val = int(inp_str[:4])
-					except ValueError:
-						continue
-				elif not is_yr:
-					try:
-						try:
-							val = int(inp_str[:2])
-						except KeyError:
-							val = int(inp_str)
-					except ValueError:
-						continue
-				else:
-					continue
-				break
-			return val
-
-		os.system('cls')
-		if prompting_msg is not None:
-			print(f"{prompting_msg}\n")
-		yr = get_info("Which year? (In <yyyy> format please) :", True)
-		mn = 0
-		while not 1 <= mn <= 12:
-			mn = get_info("What month? (as an int please) :", False)
-		dy = 0
-		while not 1 <= dy <= monthrange(yr, mn)[1]:
-			dy = get_info("What day? :", False)
-
-		return date(yr, mn, dy)
-
-	def parse_user_date(self, usr_date: str) -> date:
-		"""
-		Parses a user's date input, prompts the user to input useful date data if user's date was
-		invalid
-		Args:
-			usr_date : str, user input of date info. Should be in <yyyy/mm/dd> format
-
-		Returns:
-			valid datetime.date() object
-		"""
-		if usr_date is None:
-			return self.prompt_date()
-		try:
-			dt_list = usr_date.split("/")
-			# Ensure right number of fields
-			if len(dt_list) >= 3:
-				try:
-					# Ensure year is long enough to be useful
-					if len(dt_list[0]) == 4:
-						year = int(dt_list[0])
-					else:
-						raise BreakoutError()
-					# set rest of info
-					month = int(dt_list[1])
-					day = int(dt_list[2])
-				# deal with bad user characters
-				except ValueError:
-					raise BreakoutError()
-				# create date if user isn't a dingus
-				calendar_date = date(year, month, day)
-			else:
-				raise BreakoutError()
-		except BreakoutError:
-			# Make user give us a useful date if they are a dingus
-			calendar_date = self.prompt_date()
-		return calendar_date
 
 	def command_loop(self):
 		"""
 		Main loop of the calendar. Prompts the user to input commands to modify the calendar or
 		scroll around in time
 		"""
-
-		info_string = f"""
-Here's how to use the calendar!
-To scroll to the next day enter         : {self.FORWARD}{self.DAY}
-TO scroll to the previous day enter     : {self.BACKWARD}{self.DAY}
-To scroll to the the next month enter   : {self.FORWARD}{self.MONTH}
-To scroll to the previous month enter   : {self.BACKWARD}{self.MONTH}
-To scroll to the next year enter        : {self.FORWARD}{self.YEAR}
-To scroll to the previous year enter    : {self.BACKWARD}{self.YEAR}
-To scroll to a date enter               : {self.SCROLL}<date in yyyy/mm/dd format>
-To create an event enter                : {self.NEW}<event name>-<date in yyyy/mm/dd format>
-To modify an event enter                : {self.MODIFY}<event name>-<date in yyyy/mm/dd format>
-To read an event enter                  : {self.READ}<event name>-<date in yyyy/mm/dd format>
-(To continue Press enter)
-"""
 
 		command_ms = "Welcome to the calendar, what would you like to do? \n"
 		command_ms += "(Q to quit, H for help) : "
@@ -182,15 +101,14 @@ To read an event enter                  : {self.READ}<event name>-<date in yyyy/
 				if cmd == self.QUIT:
 					break
 				elif cmd == self.HELP:
-					# os.system('cls')
-					input(info_string)
+					input(self.MENU_STRING)
 				elif cmd in self.SCROLLING:
 					self.scroll(user_input)
 				elif cmd in self.EVENTS:
 					self.eventing(user_input)
 				else:
 					input(f"{cmd} is not a valid command, please input a valid command\
-					{info_string}")
+					{self.MENU_STRING}")
 			# MainError is just an indicator that user wants to try and input again
 			except MainError:
 				continue
@@ -203,14 +121,15 @@ To read an event enter                  : {self.READ}<event name>-<date in yyyy/
 		"""
 
 		cmd = usr_input[0]
-		try:
+		if len(usr_input) > 1:
 			usr_args = usr_input[1:]
-		except IndexError:
+		else:
 			usr_args = None
 		if cmd == self.SCROLL:
-			calendar_date = self.parse_user_date(usr_args)
+			calendar_date = parse_user_date(usr_args)
 			self.today = calendar_date
 		elif cmd == self.FORWARD or cmd == self.BACKWARD:
+			# Move forward of backward
 			if cmd == self.FORWARD:
 				sgn = 1
 			else:
@@ -239,14 +158,14 @@ To read an event enter                  : {self.READ}<event name>-<date in yyyy/
 			usr_args = None
 		if usr_args is None:
 			name = input("Give us a name for the event : ")
-			calendar_date = self.prompt_date("Lets get a date for the event")
+			calendar_date = prompt_user_date("Lets get a date for the event")
 		else:
 			try:
 				name, usr_date = usr_args.split("-")[:2]
-				calendar_date = self.parse_user_date(usr_date)
+				calendar_date = parse_user_date(usr_date)
 			except ValueError:
 				name = usr_input
-				calendar_date = self.prompt_date("Date could not be parsed, lets get a new one")
+				calendar_date = prompt_user_date("Date could not be parsed, lets get a new one")
 		if cmd == self.NEW:
 			self.events.update({name: calendar_date})
 			input(f"new event created {self.print_event(name)}")

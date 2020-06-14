@@ -123,43 +123,6 @@ of the following (case insensitive): {commands}""")
 		self.month = self.date_of_event.month
 		self.day = self.date_of_event.day
 
-	@staticmethod
-	def prompt_user_time(prompting_msg: str = None) -> time:
-		"""
-		Prompts the user to import time info for hours and minutes
-		Args:
-			prompting_msg : message to prompt the user for info on the time
-
-		Returns:
-			indicates user's input time
-
-		"""
-		def get_info(msg: str) -> int:
-			"""
-			Uses msg to prompt user to provide useful time info
-			Args:
-				msg : message prompting the user to provide the desired info
-			Returns: int
-			"""
-			while True:
-				usr_inp = input(msg)
-				try:
-					if usr_inp[0].upper() == Calendar.QUIT:
-						raise MainError
-					try:
-						val = int(usr_inp[:2])
-					except KeyError:
-						val = int(usr_inp)
-				except (IndexError, ValueError):
-					print(f"{usr_inp} is not a valid input. Try again")
-					continue
-			return val  # TODO : Fix this
-		if prompting_msg is not None:
-			print(prompting_msg)
-		os.system('cls')
-		print("Use command Q to return to the main menu at any time")
-		# TODO : FINISH
-
 
 	def __repr__(self):  # TODO: overwrite this method to provide nice description of event
 		pass
