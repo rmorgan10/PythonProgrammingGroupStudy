@@ -19,10 +19,11 @@ def parse_user_date(usr_date: str) -> date:
 	Returns:
 		valid datetime.date() object
 	"""
+	expected_len = len("yyyy/mm/dd")
 	if usr_date is None:
 		return prompt_user_date()
 	try:
-		dt_list = usr_date.split("/")
+		dt_list = usr_date[0:expected_len].split("/")
 		# Ensure right number of fields
 		if len(dt_list) >= 3:
 			try:

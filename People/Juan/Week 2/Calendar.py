@@ -32,6 +32,11 @@ class Calendar:
 	MODIFY = "C"
 	READ = "R"
 	EVENTS = [NEW, MODIFY, READ]
+	VERB = {
+		NEW : "Made",
+		MODIFY : "Modified",
+		READ : "Read"
+	}
 	# utility --------------------------------------------------------------------------------------
 	QUIT = "Q"
 	HELP = "H"
@@ -67,10 +72,10 @@ class Calendar:
 	To scroll to the previous month enter   : {BACKWARD}{MONTH}
 	To scroll to the next year enter        : {FORWARD}{YEAR}
 	To scroll to the previous year enter    : {BACKWARD}{YEAR}
-	To scroll to a date enter               : {SCROLL}<date in yyyy/mm/dd format>
-	To create an event enter                : {NEW}<event name>-<date in yyyy/mm/dd format>
-	To modify an event enter                : {MODIFY}<event name>-<date in yyyy/mm/dd format>
-	To read an event enter                  : {READ}<event name>-<date in yyyy/mm/dd format>
+	To scroll to a date enter               : {SCROLL} <date in yyyy/mm/dd format>
+	To create an event enter                : {NEW} <date in yyyy/mm/dd format> - <name>
+	To modify an event enter                : {MODIFY} <date in yyyy/mm/dd format> - <name>
+	To read an event enter                  : {READ} <date in yyyy/mm/dd format> - <name>
 	(To continue Press enter)
 	"""
 
@@ -88,6 +93,7 @@ class Calendar:
 		command_ms = "Welcome to the calendar, what would you like to do? \n"
 		command_ms += "(Q to quit, H for help) : "
 		ignores = [" ", "\n"]
+
 		while True:
 			self.print_calendar()
 			user_input = input(command_ms)
@@ -157,15 +163,15 @@ class Calendar:
 		else:
 			usr_args = None
 		if usr_args is None:
-			name = input("Give us a name for the event : ")
 			calendar_date = prompt_user_date("Lets get a date for the event")
+			name = input("Give us a name for the event : ")
 		else:
-			try:
-				name, usr_date = usr_args.split("-")[:2]
-				calendar_date = parse_user_date(usr_date)
-			except ValueError:
-				name = usr_input
-				calendar_date = prompt_user_date("Date could not be parsed, lets get a new one")
+			usr_args = usr_args.split("-")[:2]
+			calendar_date = parse_user_date(usr_args[0])
+			if len(usr_args) >= 2:
+				name = usr_args[2]
+			else:
+				name = input(f"What is the name of the event to be {Calendar.VERB[cmd]}")
 		if cmd == self.NEW:
 			self.events.update({name: calendar_date})
 			input(f"new event created {self.print_event(name)}")
@@ -179,6 +185,7 @@ class Calendar:
 				input("The event you described does not exist. Back to main menu ")
 				raise MainError
 
+	# TODO : Move following two functions to Events.py
 	def print_event(self, name: str):
 		"""
 		Returns a string describing the event in question
