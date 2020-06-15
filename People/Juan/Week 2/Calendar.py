@@ -39,14 +39,15 @@ class Calendar:
 	READ = "R"
 	EVENTS = [NEW, MODIFY, READ]
 	VERB = {
-		NEW : "Made",
-		MODIFY : "Modified",
-		READ : "Read"
+		NEW: "Made",
+		MODIFY: "Modified",
+		READ: "Read"
 	}
 	# utility --------------------------------------------------------------------------------------
 	QUIT = "Q"
 	HELP = "H"
-	UTIL = [QUIT, HELP]
+	ALL = "A"
+	UTIL = [QUIT, HELP, ALL]
 	COMMANDS = SCROLLING + EVENTS + UTIL
 	# indicators -----------------------------------------------------------------------------------
 	DAY = "D"
@@ -82,6 +83,7 @@ class Calendar:
 	To create an event enter                : {NEW} <date in yyyy/mm/dd format> - <name>
 	To modify an event enter                : {MODIFY} <date in yyyy/mm/dd format> - <name>
 	To read an event enter                  : {READ} <date in yyyy/mm/dd format> - <name>
+	To print all events enter               : {ALL}
 	(To continue Press enter)
 	"""
 
@@ -92,10 +94,10 @@ class Calendar:
 		Stores events as a nested dictionary with dates as keys, lastly with a names dict.
 		Structure:
 		self.events = {
-			year(int) : {
-				month(int) : {
-					day(int) : {
-						name(int) : (Event)
+			year(str) : {
+				month(str) : {
+					day(str) : {
+						name(str) : (Event)
 					}
 				}
 			}
@@ -128,6 +130,8 @@ class Calendar:
 					break
 				elif cmd == self.HELP:
 					input(self.MENU_STRING)
+				elif cmd == self.ALL:
+					self.print_all_events()
 				elif cmd in self.SCROLLING:
 					self.scroll(user_input)
 				elif cmd in self.EVENTS:
@@ -189,7 +193,7 @@ class Calendar:
 			usr_args = usr_args.split("-")[:2]
 			calendar_date = parse_user_date(usr_args[0])
 			if len(usr_args) >= 2:
-				name = usr_args[2]
+				name = usr_args[1]
 			else:
 				name = input(f"What is the name of the event to be {Calendar.VERB[cmd]}")
 		if cmd == self.NEW:
@@ -198,26 +202,84 @@ class Calendar:
 		if cmd == self.MODIFY or cmd == self.READ:
 			if name in self.find_events(calendar_date).keys():
 				if cmd == self.MODIFY:
-					self.get_event(calendar_date, name).modify()
-					input(f"Modified event : {self.get_event(calendar_date, name)}")
+					mod_event = self.get_event(calendar_date, name)
+					mod_event.modify()
+					self.update_event(mod_event, calendar_date, name)
+					input(f"Modified event : {mod_event}")
 				else:
 					input(self.get_event(calendar_date, name))
 			else:
 				input("The event you described does not exist. Back to main menu ")
+
+	def update_event(self, modified_event: Event, old_date: DateTypes, old_name: str):
+		"""
+		Checks event after it's been modified and rewrites it to the dict with updated indeces
+		"""
+		input("Hello There")
+		new_ev = self.get_event(modified_event.date_of_event, modified_event.name)
+		old_ev = self.get_event(old_date, old_name)
+		if new_ev != old_ev:
+			input("General Kenobi")
+			pop_str = f"{old_date.year}.{old_date.month}.{old_date.day}.{old_name}"
+			self.events.pop(pop_str)
+			Calendar.clean_nested_dict(self.events)
+			self.events[
+				self.ind_from_date(modified_event.date_of_event, modified_event.name)
+			] = modified_event
+
+	def print_all_events(self):
+		prnt = "{\n"
+		for year, months in self.events.items():
+			prnt += f"\t{year} : " + "{\n"
+			for month, days in months.items():
+				prnt += f"\t\t{month} : " + "{\n"
+				for day, names in days.items():
+					prnt += f"\t\t\t{day} : " + "{\n"
+					for name, ev in names.items():
+						ev_str = repr(ev).replace("\n", "\n\t\t\t\t\t")
+						prnt += f"\t\t\t\t{name}\t{ev_str}\n"
+					prnt += "\t\t\t},\n"
+				prnt += "\t\t},\n"
+			prnt += "\t},\n"
+		prnt += "}"
+		input(prnt)
+
+	@staticmethod
+	def clean_nested_dict(nested_dict):
+		"""
+		Recursively cleans nested_dict to remove empty dicts and subdicts
+
+		Believe it or not this works. Checkout the Calendar testing ipython notebook.
+		"""
+		# if lowest level item is not an empty dict, don't pop this, or parents
+		if not isinstance(nested_dict, dict):
+			return False
+		# if lowest level item is an empty dict, pop this from the parent and clean up recursively
+		if nested_dict == {}:
+			return True
+
+		# indicates whether this dict/sub_dict should be "popped" (cleaned up)
+		pop_this = True
+		for key, sub_dict in list(nested_dict.items()):
+			pop_that = Calendar.clean_nested_dict(sub_dict)
+			if pop_that:
+				nested_dict.pop(key)
+			pop_this *= pop_that
+		return pop_this
 
 	@staticmethod
 	def ind_from_date(calendar_date: DateTypes, name: str = None):
 		"""
 		Args:
 			calendar_date : date to be used for indexing
-			name : optional. Tacked on to return in included
+			name : optional. Tacked on to return if included
 		Returns:
 			year (int), month (int), day (int), name (str)
 		"""
 		if name is not None:
-			return calendar_date.year, calendar_date.month, calendar_date.day, name
+			return str(calendar_date.year), str(calendar_date.month), str(calendar_date.day), name
 		else:
-			return calendar_date.year, calendar_date.month, calendar_date.day
+			return str(calendar_date.year), str(calendar_date.month), str(calendar_date.day)
 
 	def get_event(self, calendar_date: DateTypes, name: str) -> Event:
 		"""
@@ -260,7 +322,7 @@ class Calendar:
 		while name in self.find_events(calendar_date).keys():
 			overwrite = input(
 				f"Another event is named {name} on that date. Do you wish to overwrite it? (Y/n) : "
-				f"Other event : {self.get_event(calendar_date, name)}"
+				f"Other event : {self.get_event(calendar_date, name)}\n"
 			)
 			overwrite = overwrite.upper() != "N"
 			if not overwrite:
@@ -330,7 +392,11 @@ class Calendar:
 		# Find number of days in month
 		num_days = monthrange(self.today.year, self.today.month)[1]
 
-		monthly_events = list(self.events[self.today.year, self.today.month].keys())
+		try:
+			monthly_events = list(self.events[str(self.today.year), str(self.today.month)].keys())
+			monthly_events = [int(dy) for dy in monthly_events]
+		except KeyError:
+			monthly_events = []
 
 		cal_string = ""
 		# Print month and year

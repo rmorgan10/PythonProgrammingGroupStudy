@@ -4,11 +4,25 @@ the one to do it though. Nu uh
 """
 from datetime import date, datetime, time
 from typing import TypeVar
-import os
 from CalendarErrors import MainError
-from Calendar import Calendar, DateTypes
 from Prompt import prompt_user_date, prompt_user_time
 
+DateTypes = TypeVar("DateTypes", date, datetime)
+
+MONTHS = {
+	1: "January",
+	2: "February",
+	3: "March",
+	4: "April",
+	5: "May",
+	6: "June",
+	7: "July",
+	8: "August",
+	9: "September",
+	10: "October",
+	11: "November",
+	12: "December"
+}
 
 class Event:
 	"""
@@ -61,6 +75,7 @@ class Event:
 		info_str = f"""
 Let's modify the event below.
 {self}		
+
 To return to the main menu enter Q,
 To change the name enter N,
 To change the description enter L
@@ -93,13 +108,13 @@ following commands (case insensitive):\n{commands}")
 		if cmd == "Q":
 			raise MainError
 		elif cmd == "N":
-			self.name = input(f"What is {self.name}'s new name?")
+			self.name = input(f"What is {self.name}'s new name? : ")
 		elif cmd == "L":
-			self.description = input(f"What is {self.name}'s new description?")
+			self.description = input(f"What is {self.name}'s new description? : ")
 		elif cmd == "D":
-			self.update_date(prompt_user_date(f"What is {self.name}'s new date?"))
+			self.update_date(prompt_user_date(f"What is {self.name}'s new date? : "))
 		elif cmd == "T":
-			self.update_time(prompt_user_time(f"What is {self.name}'s new time?"))
+			self.update_time(prompt_user_time(f"What is {self.name}'s new time? : "))
 		else:
 			print("You really shouldn't be here")
 
@@ -123,7 +138,7 @@ following commands (case insensitive):\n{commands}")
 		self.day = self.date_of_event.day
 
 	def __repr__(self):
-		ev_str = f"{self.name} : {self.year}-{Calendar.MONTH[self.month]}-{self.day}"
+		ev_str = f"{self.name} : {self.year}-{MONTHS[self.month]}-{self.day}"
 		if self.time == time(0):
 			ev_str += "\nAll day"
 		else:

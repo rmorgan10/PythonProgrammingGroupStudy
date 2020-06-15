@@ -1,13 +1,12 @@
 import os
 from datetime import date, time, datetime
 from calendar import monthrange
-from Calendar import Calendar
 from CalendarErrors import MainError, BreakoutError
 
 """
 Module to hold generally useful functions that prompt the user for information
 """
-
+QUIT = "Q"
 
 def parse_user_date(usr_date: str) -> date:
 	"""
@@ -60,7 +59,7 @@ def prompt_user_date(prompting_msg=None) -> date:
 	os.system('cls')
 	if prompting_msg is not None:
 		print(prompting_msg)
-	print(f"(input {Calendar.QUIT} to return to the main menu at any time)")
+	print(f"(input {QUIT} to return to the main menu at any time)")
 
 	yr = get_info("Which year? (In <yyyy> format please) :", 1, ln=4)
 	mn = get_info("What month? (as an int please) :", 1, 12)
@@ -82,10 +81,10 @@ def prompt_user_time(prompting_msg: str = None) -> time:
 	os.system('cls')
 	if prompting_msg is not None:
 		print(prompting_msg)
-	print(f"(input {Calendar.QUIT} to return to the main menu at any time)")
+	print(f"(input {QUIT} to return to the main menu at any time)")
 
-	hr = get_info("What hour? (0 to 23)", 0, 24)
-	mn = get_info("What minute?", 0, 60)
+	hr = get_info("What hour? (0 to 23): ", 0, 24)
+	mn = get_info("What minute?: ", 0, 60)
 	return time(hr, mn)
 
 
@@ -136,7 +135,7 @@ def get_info(msg: str, low: int, high: int = None, ln: int = 2) -> int:
 		usr_inp = input(msg)
 		try:
 			# Deal with the quitting case (always available)
-			if usr_inp[0].upper() == Calendar.QUIT:
+			if usr_inp[0].upper() == QUIT:
 				raise MainError
 			# store user data
 			val = int(usr_inp[:ln])
