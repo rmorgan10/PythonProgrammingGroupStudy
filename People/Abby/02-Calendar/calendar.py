@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import date
 import csv
 import argparse
+# If I wanna use benedict: pip install python-benedict
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 ### Some converters
@@ -212,6 +213,10 @@ def receiveCommands(year, month, day):
     command = askForCommand()
     
     #TODO: Ask someone how to make this more robust
+    # Rob says to use a dictionary and have the associated functions as strings
+    # Then you can call "exec()" followed by the string to run it.
+    # Rob also runs "while command not in possibleCommands.keys()" once 
+    #   And possibleCommands is now a dictionary where the keys are h, a, d, ...
     while command != "done":
         if   command == possibleCommands[0][0]: 
             printHelp(0)
@@ -250,6 +255,9 @@ def addAnEvent_user(index):
     print(f"{name} added.")
     
 def deleteAnEvent(index, year, month, day):
+    # Rob says to avoid global variables. This was the function that made me not
+    # Recommends a "del" function or maybe just overwriting the old 
+    #  dictionary with the new one with deleted keys. 
     print(f"\n\033[1m{possibleCommands[index][1]}:\033[0m")
     
     eventNum = -1 + int(
