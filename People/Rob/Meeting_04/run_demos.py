@@ -21,11 +21,15 @@ def run_logging_demo():
     # Execute tutorial functions
     print_invita("The Basics")
     print("\n\nHere's what the demo is doing:\n\n")
-    demo_logging.getting_started()
+    demo_logging.basic()
     print("\n\n")
     print_invita("Advanced")
     print("\n\nHere's what the demo is doing:\n\n")
     demo_logging.advanced()
+    print("\n\n")
+    print_invita("Config File")
+    print("\n\nHere's what the demo is doing:\n\n")
+    demo_logging.config()
     
     return
 
