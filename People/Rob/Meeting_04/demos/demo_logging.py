@@ -50,7 +50,7 @@ def advanced():
     """
     Shows advanced features of the logging module.
     -- We'll now do the basicConfig operations manually, 
-       which enable much more freedom
+       which enables much more freedom
     """
     # For demo, print function body to terminal
     print(inspect.getsource(inspect.currentframe().f_code))
