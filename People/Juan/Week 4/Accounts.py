@@ -4,13 +4,17 @@
 This file stores account classes
 """
 
-from Transactions import Transaction
 from typing import List
+import random
+import pickle
+# This is filthy, BUT we only use Transaction here to it's ok. I promise.
+from Transactions import DirectedTransaction as Transaction
 
 
 class Account:
 
 	MIN_NAME = 4  # Minimum name length
+	EXTENSION = "acc"
 
 	def __init__(self, name):
 		self.__number = self.create_account_number()
@@ -40,7 +44,11 @@ class Account:
 		Returns:
 			Current account balance in USD
 		"""
-		raise NotImplementedError
+		balance = 0
+		for transaction in self.transactions:
+			sign = 1 if transaction.receiving_account == self.__number else -1
+			balance += sign*transaction.usd
+		return balance
 
 	@property
 	def all_usd(self) -> bool:
@@ -52,15 +60,19 @@ class Account:
 		Returns:
 			int : the account number
 		"""
-		raise NotImplementedError
+		random.seed(self.name)
+		return 10**10 + random.randint(0, 10**9-1)
 
 	def apply(self, new_transaction: Transaction):
 		"""
 		Applies new_transaction to this account
-		Args:
-			new_transaction ():
 		"""
-		raise NotImplementedError
+		if self.__number in [new_transaction.receiving_account, new_transaction.sending_account]:
+			self.transactions.append(new_transaction)
+		else:
+			raise ValueError(
+				"This account is not involved in the desired transaction. Transaction Cancelled"
+			)
 
 	def save(self) -> str:
 		"""
@@ -68,7 +80,10 @@ class Account:
 		Returns:
 			The filename for the file this class was saved to
 		"""
-		raise NotImplementedError
+		fname = f"{self.account_number}.{Account.EXTENSION}"
+		with open(fname,"ab") as account_file:
+			pickle.dump(self, account_file)
+		return fname
 
 	@staticmethod
 	def load(account_filename: str) -> Account:
@@ -79,7 +94,9 @@ class Account:
 		Returns:
 			Account loaded from file
 		"""
-		raise NotImplementedError
+		with open(account_filename, "rb") as account_file:
+			loaded_account = pickle.load(account_file)
+		return loaded_account
 
 	def __len__(self):
 		return len(self.transactions)

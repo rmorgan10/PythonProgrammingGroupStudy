@@ -74,7 +74,7 @@ class Transaction:
 
 	@property
 	def usd(self):
-		return float(self.amount)*self.usd_conversion
+		return Decimal(float(self.amount)*self.usd_conversion).quantize(Transaction.QUANTIZER)
 
 	@property
 	def _currency_codes(self) -> List[str]:
