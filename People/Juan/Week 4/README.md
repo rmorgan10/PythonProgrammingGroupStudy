@@ -16,10 +16,29 @@ It’s recommended that your class takes in an :
 * a description (default None).
 
 ## Part 2
-Make a class that stores account info :
+Make an account class that stores account info :
 * account number
+    * Read only property
 * name
+    * read-write property, with assertion to enusre it is at least 4 characters long
 * a list of transactions
+
+* class should support len(), returning the number of transactions
+
+Should provide the calculated, read-only properties:
+* balance.
+    * Returns balance in USD
+* all_usd
+    * Returns True if all transactions are in USD, False otherwise
+
+Three other methods should be provided:
+* apply()
+    * to apply (add) a transaction
+* save() and load()
+    * should use a binary pickle with the filename being the account number with extension .acc
+    * They should save and load the account number, name, and all transactions.
+    
+Can be implemented in about 90 lines.
 
 The prompt asks you to be able to save and load data from a file. We can get so extra as to have it :
 * output your account balance in all sorts of fun ways

@@ -5,21 +5,17 @@ We're gonna put transaction classes here
 """
 
 from datetime import datetime
-import re
+from decimal import Decimal
+from typing import List
+import csv
 
 
 class Transaction:
 	"""
-	Class that tracks a potential transaction
-
-	Should:
-	* add money to a receiving account
-	* remove money from a giving account
-	* convert funds from account to account
+	Class that tracks an attempted transaction
 
 	Attributes:
-		amount (str): string in format {Whole_place}.{decimal places} with max 2 characters after
-			the decimal
+		amount (Decimal): amount to be transferred to two decimal places
 		transaction_date (datetime): date and time when the transaction took place. If unspecified,
 			set to current date and time
 		currency (str): currency in use, according to the common codification
@@ -27,9 +23,9 @@ class Transaction:
 		description (str): string describing the nature of the transaction
 	"""
 
-	# TODO: Use custom, or elsewhere defined, data type for ammount, to avoid rounding errors
-	# TODO: Have setter for currency look up the currency code given from a list of standard
-	#  codifications
+	QUANTIZER = Decimal('1.00')
+	CURRENCIES_FILENAME = "currency_codes.csv"
+
 	def __init__(
 			self,
 			amount: str,
@@ -38,11 +34,22 @@ class Transaction:
 			usd_conversion: float = 1.0,
 			description: str = None
 	):
-		self.__amount = self.set_amount(amount)
-		self.__transaction_date = self.set_transaction_date(transaction_date)
-		self.__currency = self.set_currency(currency)
-		self.__usd_conversion = self.set_usd_conversion(usd_conversion)
-		self.__description = self.set_description(description)
+
+		self.completed = False
+		self.__amount = Decimal(amount).quantize(Transaction.QUANTIZER)
+		self.__transaction_date = transaction_date if transaction_date is not None else datetime.now()
+
+		if currency.upper() not in self._currency_codes:
+			raise ValueError(f"{currency} is not a valid currency code")
+		self.__currency = currency
+
+		try:
+			self.__usd_conversion = float(usd_conversion)
+		except ValueError as e:
+			msg = f"invalid type {type(usd_conversion)} for usd_conversion. Numeric type required"
+			raise TypeError(msg) from e
+
+		self.__description = description if description is not None else ""
 
 # attribute getters --------------------------------------------------------------------------------
 	@property
@@ -69,38 +76,57 @@ class Transaction:
 	def usd(self):
 		return float(self.amount)*self.usd_conversion
 
-# attribute setters --------------------------------------------------------------------------------
-	@staticmethod
-	def set_amount(amount):
-		# Use a regular expression to match the input string
-		pattern = r"(\d+)\.?(\d2)?"
-		try:
-			am_groups = re.match(pattern, amount).groups()
-			return f"{am_groups[0]}.{am_groups[1]}"
-		except (AttributeError, TypeError) as e:
-			val_er_msg = f"amount: {amount} does not match the pattern <whole>.<decimal>"
-			raise ValueError(val_er_msg) from e
+	@property
+	def _currency_codes(self) -> List[str]:
+		with open(Transaction.CURRENCIES_FILENAME, newline="") as f:
+			currency_info = list(csv.reader(f))
+		return [cur[2] for cur in currency_info]
 
-	@staticmethod
-	def set_transaction_date(transaction_date):
-		return transaction_date if transaction_date is not None else datetime.now()
 
-	@staticmethod
-	def set_currency(currency):
-		# TODO : write the list
-		# if currency.upper() not in Transaction.CURRENCIES:
-		# 	raise ValueError(f"{currency} is not a valid currency code")
-		return currency
+class DirectedTransaction(Transaction):
+	"""
+	Class to hold information on an attempted transaction between two accounts
 
-	@staticmethod
-	def set_usd_conversion(usd_conversion):
-		try:
-			return float(usd_conversion)
-		except ValueError as e:
-			msg = f"invalid type {type(usd_conversion)} for usd_conversion. Numeric type required"
-			raise TypeError(msg) from e
+	Attributes:
+		amount (Decimal): amount to be transferred to two decimal places
+		sending_account (int) : account number of account that is sending the money
+		receiving_account (int) : account number of account that is receiving the money
+		transaction_date (datetime): date and time when the transaction took place. If unspecified,
+			set to current date and time
+		currency (str): currency in use, according to the common codification
+		usd_conversion (float): conversion rate to USD
+		description (str): string describing the nature of the transaction
+	"""
+	def __init__(
+			self,
+			amount: str,
+			sending_account: int,
+			receiving_account: int,
+			transaction_date: datetime = None,
+			currency: str = "USD",
+			usd_conversion: float = 1.0,
+			description: str = None,
+	):
+		super().__init__(amount, transaction_date, currency, usd_conversion, description)
+		self.__sending = self._validate(sending_account)
+		self.__receiving = self._validate(receiving_account)
 
-	@staticmethod
-	def set_description(description):
-		return description if description is not None else ""
+	@property
+	def sending_account(self):
+		return self.__sending
+
+	@property
+	def receiving_account(self):
+		return self.__receiving
+
+	def _validate(self, account_no):
+		"""
+		Validates the provided account number. Raises a ValueError if the number is not valid
+		Returns:
+			the account number
+		"""
+		# TODO : Implement this
+		return account_no
+
+
 
