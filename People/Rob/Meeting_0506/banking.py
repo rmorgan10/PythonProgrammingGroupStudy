@@ -1,9 +1,11 @@
 # A module to define the banking classes
 
 from collections import defaultdict
+import datetime
 import os
 from random import randint
 import sqlite3
+import sys
 
 class Bank:
     def __init__(self):
@@ -80,6 +82,7 @@ class Bank:
         needed here.
         """
         self.conn.close()
+        sys.exit()
         return
     
 class Teller(Bank):
@@ -117,6 +120,7 @@ class Teller(Bank):
         # Make a new account
         account = Account()
         account_pin = account._generate_pin()
+        account.pin = account_pin
 
         # Store the account in the Bank data structures
         self.accounts[account.number] = account
@@ -223,6 +227,7 @@ class Account:
             number = self._generate_number()
         self.number = number
         self.balance = balance
+        self.pin = '' # overwritten by Teller during account creation
         return
 
     def __str__(self):
@@ -309,21 +314,154 @@ class Transaction:
 # Custom Exceptions
 class YaBrokeException(Exception): pass
 class YaHackinException(Exception): pass
+class YaSuckAtCodingError(Exception): pass
+
+# Functions for user interaction
+def menu():
+    """
+    Prompt the user with a set of possible actions and return
+    the choice.
+
+    :return: choice: the user's selected action
+    """
+    print("What would you like to do?\n")
+    print("  a) Make a deposit")
+    print("  b) Make a withdrawal")
+    print("  c) View balance")
+    print("  d) Transfer funds to another account")
+    print("  e) Close your account")
+    print("  q) Quit\n")
+    choice = input("Your choice: ").strip().lower()
+    while choice not in ['a', 'b', 'c', 'd', 'e', 'q']:
+        print("You must choose from ['a', 'b', 'c', 'd', 'e', 'q'].")
+        choice = input("Your choice: ").strip().lower()
+
+    return choice
+
+def connect(teller):
+    """
+    Ask the user to open a new account or log in to an 
+    existing account.
+
+    :param teller: Teller, the Teller instance of the program
+    :return: account: Account, the opened or logged-into account
+    """
+    print("What would you like to do?\n")
+    print("  a) Login")
+    print("  b) Open a new account")
+    print("  q) Quit\n")
+    choice = input("Your choice: ").strip().lower()
+    while choice not in ['a', 'b', 'q']:
+        print("\nYou need to choose from ['a', 'b', 'q']")
+        choice = input("Your choice: ").strip().lower()
+
+    if choice == 'a':
+        # Attempt to login to an existing account
+        number = input("Please type your account number: ").strip()
+        if number in teller.pins.keys():
+            login_attempts = 0
+            while login_attempts < 5:
+                pin = input("Please type your PIN: ").strip()
+                try:
+                    account = teller.login(numner, pin)
+                    return account
+                
+                except YaHackinException:
+                    print("Incorrect PIN. {} attempts remaining.".format(4 - login_attempts))
+                    login_attempts += 1
+            else:
+                # Maximum attempts reached. Force quit.
+                print("Login failed. Get out hacker.")
+                choice = 'q'
+        else:
+            print("There is no account number {} on record. Please try again.\n")
+            return connect(teller)
+
+    if choice == 'b':
+        # Open a new account
+        account = teller.open_account()
+        print("\nWelcome to your new account!")
+        print("  - Account Number: {}".format(str(account)))
+        print("  - PIN: {}\n".format(account.pin))
+        return account
+
+    if choice == 'q':
+        # Donezo
+        quit_session(teller)
+              
+    return
+
+def welcome():
+    """
+    Welcome the user to the bank, but only if it is currently in
+    operating hours.
+    """
+
+    time = datetime.datetime.now()
+    if time.weekday() in (5, 6):
+        print("The bank is closed on weekends.")
+        sys.exit()
+    elif time.hour < 9 or time.hour >= 17:
+        print("The bank is only open from 9am to 5pm.")
+        sys.exit()
+
+    print("\n\n\t\tWelcome to the Bank!\n\n")
+    return
+
+def quit_session(bank_or_teller):
+    """
+    The user is done, close the bank.
+
+    :param bank_or_teller: either a Bank or Teller object
+    """
+    print("Goodbye!")
+    bank_or_teller.close_bank()
+    return
 
 # Main body
 if __name__ == "__main__":
-    b = Bank()
-    teller = Teller(b)
+    # Welcome the user to the bank
+    welcome()
+    
+    # Open the bank
+    bank = Bank()
+    teller = Teller(bank)
 
-    acct = teller.open_account()
-    teller.make_deposit(acct, 100.0)
+    # Have the user connect to a bank account
+    account = connect(teller)
 
-    print(b.accounts.keys())
-    print(list(b.accounts.values())[0].balance)
-    print(b.pins)
-    print(b.ledger)
+    # Prompt the user for an action
+    choice = menu()
+    while choice != 'q':
 
-    print(teller.accounts.keys())
-    print(list(teller.accounts.values())[0].balance)
-    print(teller.pins)
-    print(teller.ledger)
+        if choice == 'a':
+            # Make a deposit
+            pass
+
+        elif choice == 'b':
+            # Make a withdrawal
+            pass
+        
+        elif choice == 'c':
+            # View balance
+            print("\nYour balance is ${0.2f}\n".format(account.balance))
+            
+        elif choice == 'd':
+            # Wire transfer
+            pass
+        
+        elif choice == 'e':
+            # Close account and logout
+            pass
+
+        else:
+            # The code should never get here
+            raise YaSuckAtCodingError
+
+        # Figure out what the user wants to do next
+        choice = menu()
+
+    else:
+        # The user has chosen to quit
+        quit_session(bank)
+        
