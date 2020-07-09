@@ -137,5 +137,7 @@ dmypy.json
 # textbook
 ProgrammingInPython3.pdf
 
-# Rob's list of events for the calendar project
+# Rob's helper files
 People/Rob/Meeting_03/calendar_db.csv
+People/Rob/Meeting_0506/existing_accounts.txt
+People/Rob/Meeting_0506/bank_ledger.db
