@@ -110,7 +110,7 @@ class Teller(Bank):
 
         return
 
-    def open_account(self):
+    def open_account(self, number=None):
         """
         Create a new account. Generate a new account number and PIN. 
         Add the account to the database.
@@ -118,7 +118,7 @@ class Teller(Bank):
         :return: account: An Account instance for the object just created
         """
         # Make a new account
-        account = Account()
+        account = Account(number)
         account_pin = account._generate_pin()
         account.pin = account_pin
 
@@ -310,7 +310,6 @@ class Transaction:
         self.__amount = amount
         return
         
-
 # Custom Exceptions
 class YaBrokeException(Exception): pass
 class YaHackinException(Exception): pass
@@ -434,28 +433,104 @@ if __name__ == "__main__":
     choice = menu()
     while choice != 'q':
 
+        # Make a deposit
         if choice == 'a':
-            # Make a deposit
-            pass
+            # Get the amount to deposit
+            amount = input("Please enter the amount of the deposit: $")
+            while not amount.isnumeric():
+                print("You must enter a numeric value, goofball.")
+                amount = input("Please enter the amount of the deposit: $")
 
+            # Execute the deposit
+            try:
+                teller.make_deposit(account, float(amount))
+                print("Deposit was successful. New balance is ${0.2f}\n".format(account.balance))
+            except AssertionError:
+                print("You must specify a positive numeric value to deposit.")
+                print("Deposit attempt failed becasue ya dumb.")
+
+        # Make a withdrawal
         elif choice == 'b':
-            # Make a withdrawal
-            pass
-        
-        elif choice == 'c':
-            # View balance
-            print("\nYour balance is ${0.2f}\n".format(account.balance))
-            
-        elif choice == 'd':
-            # Wire transfer
-            pass
-        
-        elif choice == 'e':
-            # Close account and logout
-            pass
+            # Get the amount to withdraw
+            amount = input("Please enter the amount of the withdrawal: $")
+            while not amount.isnumeric():
+                print("You must enter a numeric value, goofball.")
+                amount = input("Please enter the amount of the withdrawal: $")
 
+            # Execute the withdrawal
+            try:
+                teller.make_withdrawal(account, float(amount))
+                print("Withdrawal was successful. New balance is ${0.2f}\n".format(account.balance))
+            except AssertionError:
+                print("You must specify a positive numeric value to withdraw.")
+                print("Withdrawal attempt failed becasue ya dumb.\n")
+            except YaBrokeException:
+                print("You do not have enough money in your account for that withdrawal.")
+                print("Withdrawal attempt failed becasue ya broke.\n")
+        
+        # View balance
+        elif choice == 'c':
+            print("\nYour balance is ${0.2f}\n".format(account.balance))
+
+        # Wire transfer
+        elif choice == 'd':
+            # Get account to transfer funds to
+            to_account_number = input("Enter the account you would like to send funds to: ").strip()
+            while not to_account.isnumeric() or len(to_account) != 7:
+                print("You have to enter a 7-digit number, goofball")
+                to_account_number = input("Enter the account you would like to send funds to: ").strip()
+
+            # Determine if the account exists
+            if to_account_number not in teller.accounts.keys():
+                new_choice = input("There is no account found with that number. Would you like to open one?").strip().lower()
+                while choice not in ['yes', 'no', 'y', 'n']:
+                    new_choice = input("Please enter 'yes' or 'no': ")
+
+                # Make a new account if desired or give up on the transfer
+                if new_choice in ['yes', 'y']:
+                    to_account = teller.open_account(number=to_account_number)
+                    print("\nWelcome to your new account!")
+                    print("  - Account Number: {}".format(str(to_account)))
+                    print("  - PIN: {}\n".format(to_account.pin))
+                
+                # Give up on the fool
+                elif new_choice in ['no', 'n']:
+                    print("Idk where you want me to send this money then fam.")
+                    print("Wire transer failed becasue ya dumb.\n")
+                    choice = menu()
+                    continue
+                    
+                # The code should never get here
+                else:
+                    raise YaSuckAtCodingError
+            
+            # Get amount to transfer
+            amount = input("Please enter the amount of the transfer: $")
+            while not amount.isnumeric():
+                print("You must enter a numeric value, goofball.")
+                amount = input("Please enter the amount of the transfer: $")
+            
+            # Execute transfer
+            try:
+                make_wire(account, accounts[to_account_number], amount)
+                print("Transfer successful.New balance is ${0.2f}\n".format(account.balance))
+            except AssertionError:
+                print("You must specify a positive numeric value to transfer.")
+                print("Transfer attempt failed becasue ya dumb.\n")
+            except YaBrokeException:
+                print("You do not have enough money in your account for that transfer.")
+                print("Transfer attempt failed becasue ya broke.\n")
+
+        # Close account and log out
+        elif choice == 'e':
+            try:
+                teller.close_account(account)
+                account = connect(teller)
+            except YaBrokeException:
+                print("You cannot close an account with a negative balance.\n")
+
+        # The code should never get here
         else:
-            # The code should never get here
             raise YaSuckAtCodingError
 
         # Figure out what the user wants to do next
