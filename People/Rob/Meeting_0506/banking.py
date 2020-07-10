@@ -1,6 +1,7 @@
 # A module to define the banking classes
 
 from collections import defaultdict
+import copy
 import datetime
 import os
 from random import randint
@@ -99,10 +100,11 @@ class Teller(Bank):
         :param ledger: list, a list of Transactions made in the bank
         """
         if bank is not None:
+            self.bank = bank
             # Store the attributes of an existing Bank
-            self.accounts = bank.accounts
-            self.pins = bank.pins
-            self.ledger = bank.ledger
+            self.accounts = copy.copy(bank.accounts)
+            self.pins = copy.copy(bank.pins)
+            self.ledger = copy.copy(bank.ledger)
             self.conn = bank.conn
         else:
             # Make an and inherit an empty Bank
@@ -127,9 +129,9 @@ class Teller(Bank):
         self.pins[account.number] = account_pin
 
         # Add the account to the database
-        self.conn.execute("""INSERT INTO accounts
+        self.bank.conn.execute("""INSERT INTO accounts
                              VALUES ({0}, {1})""".format(account.number, account_pin))
-        self.conn.commit()
+        self.bank.conn.commit()
         
         return account
 
@@ -180,7 +182,7 @@ class Teller(Bank):
         :param amount: float, the (positive) amount to withdrawal
         """
         # Don't let people withdrawal more than they have
-        if amount < account.balance:
+        if amount > account.balance:
             raise YaBrokeException
 
         # Make a negative transaction
@@ -207,7 +209,9 @@ class Teller(Bank):
         :param account: Account, the account to make the transaction with
         :param amount: float, the amount of the transaction
         """
-        self.ledger.append(Transaction(account, amount))
+        t = Transaction(account)
+        t.amount = amount
+        self.ledger.append(t)
         self.accounts[account.number].balance += amount
         self.update_ledger()
         return
@@ -278,12 +282,12 @@ class Transaction:
     """
     A class to collect the attributes defining a transaction.
     """
-    def __init__(self, account, amount):
+    def __init__(self, account):
         """
         Store the account and amount.
         """
         self.__account = account
-        self.__amount = amount
+        self.__amount = 0.0
         return
 
     @property
@@ -362,7 +366,7 @@ def connect(teller):
             while login_attempts < 5:
                 pin = input("Please type your PIN: ").strip()
                 try:
-                    account = teller.login(numner, pin)
+                    account = teller.login(number, pin)
                     return account
                 
                 except YaHackinException:
@@ -373,7 +377,7 @@ def connect(teller):
                 print("Login failed. Get out hacker.")
                 choice = 'q'
         else:
-            print("There is no account number {} on record. Please try again.\n")
+            print("There is no account number {} on record. Please try again.\n".format(number))
             return connect(teller)
 
     if choice == 'b':
@@ -436,15 +440,17 @@ if __name__ == "__main__":
         # Make a deposit
         if choice == 'a':
             # Get the amount to deposit
-            amount = input("Please enter the amount of the deposit: $")
-            while not amount.isnumeric():
-                print("You must enter a numeric value, goofball.")
-                amount = input("Please enter the amount of the deposit: $")
+            while True:
+                try:
+                    amount = float(input("Please enter the amount of the deposit: $"))
+                    break
+                except ValueError:
+                    print("You must enter a numeric value, goofball.")
 
             # Execute the deposit
             try:
-                teller.make_deposit(account, float(amount))
-                print("Deposit was successful. New balance is ${0.2f}\n".format(account.balance))
+                teller.make_deposit(account, amount)
+                print("Deposit was successful. New balance is ${0:.2f}\n".format(account.balance))
             except AssertionError:
                 print("You must specify a positive numeric value to deposit.")
                 print("Deposit attempt failed becasue ya dumb.")
@@ -452,15 +458,17 @@ if __name__ == "__main__":
         # Make a withdrawal
         elif choice == 'b':
             # Get the amount to withdraw
-            amount = input("Please enter the amount of the withdrawal: $")
-            while not amount.isnumeric():
-                print("You must enter a numeric value, goofball.")
-                amount = input("Please enter the amount of the withdrawal: $")
+            while True:
+                try:
+                    amount = float(input("Please enter the amount of the withdrawal: $"))
+                    break
+                except ValueError:
+                    print("You must enter a numeric value, goofball.")
 
             # Execute the withdrawal
             try:
-                teller.make_withdrawal(account, float(amount))
-                print("Withdrawal was successful. New balance is ${0.2f}\n".format(account.balance))
+                teller.make_withdrawal(account, amount)
+                print("Withdrawal was successful. New balance is ${0:.2f}\n".format(account.balance))
             except AssertionError:
                 print("You must specify a positive numeric value to withdraw.")
                 print("Withdrawal attempt failed becasue ya dumb.\n")
@@ -470,20 +478,20 @@ if __name__ == "__main__":
         
         # View balance
         elif choice == 'c':
-            print("\nYour balance is ${0.2f}\n".format(account.balance))
+            print("\nYour balance is ${0:.2f}\n".format(account.balance))
 
         # Wire transfer
         elif choice == 'd':
             # Get account to transfer funds to
             to_account_number = input("Enter the account you would like to send funds to: ").strip()
-            while not to_account.isnumeric() or len(to_account) != 7:
+            while not to_account_number.isnumeric() or len(to_account_number) != 7:
                 print("You have to enter a 7-digit number, goofball")
                 to_account_number = input("Enter the account you would like to send funds to: ").strip()
 
             # Determine if the account exists
             if to_account_number not in teller.accounts.keys():
-                new_choice = input("There is no account found with that number. Would you like to open one?").strip().lower()
-                while choice not in ['yes', 'no', 'y', 'n']:
+                new_choice = input("There is no account found with that number. Would you like to open one? (y/n) ").strip().lower()
+                while new_choice not in ['yes', 'no', 'y', 'n']:
                     new_choice = input("Please enter 'yes' or 'no': ")
 
                 # Make a new account if desired or give up on the transfer
@@ -505,15 +513,17 @@ if __name__ == "__main__":
                     raise YaSuckAtCodingError
             
             # Get amount to transfer
-            amount = input("Please enter the amount of the transfer: $")
-            while not amount.isnumeric():
-                print("You must enter a numeric value, goofball.")
-                amount = input("Please enter the amount of the transfer: $")
-            
+            while True:
+                try:
+                    amount = float(input("Please enter the amount of the transfer: $"))
+                    break
+                except ValueError:
+                    print("You must enter a numeric value, goofball.")
+
             # Execute transfer
             try:
-                make_wire(account, accounts[to_account_number], amount)
-                print("Transfer successful.New balance is ${0.2f}\n".format(account.balance))
+                teller.make_wire(account, teller.accounts[to_account_number], amount)
+                print("Transfer successful. New balance is ${0:.2f}\n".format(account.balance))
             except AssertionError:
                 print("You must specify a positive numeric value to transfer.")
                 print("Transfer attempt failed becasue ya dumb.\n")
