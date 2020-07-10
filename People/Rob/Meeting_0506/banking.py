@@ -86,32 +86,6 @@ class Bank:
         sys.exit()
         return
     
-class Teller(Bank):
-    """
-    The Teller class inherits the attributes of the bank class
-    and provides additional functionalities for making transactions.
-    """
-    def __init__(self, bank=None, ledger=None):
-        """
-        Create a Teller instance. If a Bank object is passed as an
-        argument, its attributes are inherited.
-        
-        :param bank: Bank, an existing bank instance.
-        :param ledger: list, a list of Transactions made in the bank
-        """
-        if bank is not None:
-            self.bank = bank
-            # Store the attributes of an existing Bank
-            self.accounts = copy.copy(bank.accounts)
-            self.pins = copy.copy(bank.pins)
-            self.ledger = copy.copy(bank.ledger)
-            self.conn = bank.conn
-        else:
-            # Make an and inherit an empty Bank
-            super().__init__()
-
-        return
-
     def open_account(self, number=None):
         """
         Create a new account. Generate a new account number and PIN. 
@@ -129,9 +103,9 @@ class Teller(Bank):
         self.pins[account.number] = account_pin
 
         # Add the account to the database
-        self.bank.conn.execute("""INSERT INTO accounts
+        self.conn.execute("""INSERT INTO accounts
                              VALUES ({0}, {1})""".format(account.number, account_pin))
-        self.bank.conn.commit()
+        self.conn.commit()
         
         return account
 
@@ -186,7 +160,7 @@ class Teller(Bank):
             raise YaBrokeException
 
         # Make a negative transaction
-        self._make_transaction(account, -1.0 * account.balance)
+        self._make_transaction(account, -1.0 * amount, how='subtract')
         return
 
     def make_wire(self, from_account, to_account, amount):
@@ -201,7 +175,7 @@ class Teller(Bank):
         self.make_deposit(to_account, amount)
         return
 
-    def _make_transaction(self, account, amount):
+    def _make_transaction(self, account, amount, how='add'):
         """
         Document the transaction, adjust the account balance, and 
         update the ledger database.
@@ -209,7 +183,7 @@ class Teller(Bank):
         :param account: Account, the account to make the transaction with
         :param amount: float, the amount of the transaction
         """
-        t = Transaction(account)
+        t = Transaction(account, how=how)
         t.amount = amount
         self.ledger.append(t)
         self.accounts[account.number].balance += amount
@@ -282,12 +256,13 @@ class Transaction:
     """
     A class to collect the attributes defining a transaction.
     """
-    def __init__(self, account):
+    def __init__(self, account, how='add'):
         """
         Store the account and amount.
         """
         self.__account = account
         self.__amount = 0.0
+        self.how = how
         return
 
     @property
@@ -310,7 +285,13 @@ class Transaction:
         When setting the amount, check that it is a positive float
         """
         assert isinstance(amount, float), "Amount must be a float"
-        assert amount > 0, "Amount must be positive"
+        if self.how == 'add':
+            assert amount >= 0, "Amount must be positive"
+        elif self.how == 'subtract':
+            assert amount <= 0, "Amount must be negative"
+        else:
+            raise YaSuckAtCodingError
+        
         self.__amount = amount
         return
         
@@ -341,7 +322,7 @@ def menu():
 
     return choice
 
-def connect(teller):
+def connect(bank):
     """
     Ask the user to open a new account or log in to an 
     existing account.
@@ -361,12 +342,12 @@ def connect(teller):
     if choice == 'a':
         # Attempt to login to an existing account
         number = input("Please type your account number: ").strip()
-        if number in teller.pins.keys():
+        if number in bank.pins.keys():
             login_attempts = 0
             while login_attempts < 5:
                 pin = input("Please type your PIN: ").strip()
                 try:
-                    account = teller.login(number, pin)
+                    account = bank.login(number, pin)
                     return account
                 
                 except YaHackinException:
@@ -378,11 +359,11 @@ def connect(teller):
                 choice = 'q'
         else:
             print("There is no account number {} on record. Please try again.\n".format(number))
-            return connect(teller)
+            return connect(bank)
 
     if choice == 'b':
         # Open a new account
-        account = teller.open_account()
+        account = bank.open_account()
         print("\nWelcome to your new account!")
         print("  - Account Number: {}".format(str(account)))
         print("  - PIN: {}\n".format(account.pin))
@@ -390,7 +371,7 @@ def connect(teller):
 
     if choice == 'q':
         # Donezo
-        quit_session(teller)
+        quit_session(bank)
               
     return
 
@@ -411,14 +392,14 @@ def welcome():
     print("\n\n\t\tWelcome to the Bank!\n\n")
     return
 
-def quit_session(bank_or_teller):
+def quit_session(bank):
     """
     The user is done, close the bank.
 
-    :param bank_or_teller: either a Bank or Teller object
+    :param bank: a Bank object
     """
     print("Goodbye!")
-    bank_or_teller.close_bank()
+    bank.close_bank()
     return
 
 # Main body
@@ -428,10 +409,9 @@ if __name__ == "__main__":
     
     # Open the bank
     bank = Bank()
-    teller = Teller(bank)
 
     # Have the user connect to a bank account
-    account = connect(teller)
+    account = connect(bank)
 
     # Prompt the user for an action
     choice = menu()
@@ -449,7 +429,7 @@ if __name__ == "__main__":
 
             # Execute the deposit
             try:
-                teller.make_deposit(account, amount)
+                bank.make_deposit(account, amount)
                 print("Deposit was successful. New balance is ${0:.2f}\n".format(account.balance))
             except AssertionError:
                 print("You must specify a positive numeric value to deposit.")
@@ -467,7 +447,7 @@ if __name__ == "__main__":
 
             # Execute the withdrawal
             try:
-                teller.make_withdrawal(account, amount)
+                bank.make_withdrawal(account, amount)
                 print("Withdrawal was successful. New balance is ${0:.2f}\n".format(account.balance))
             except AssertionError:
                 print("You must specify a positive numeric value to withdraw.")
@@ -489,14 +469,14 @@ if __name__ == "__main__":
                 to_account_number = input("Enter the account you would like to send funds to: ").strip()
 
             # Determine if the account exists
-            if to_account_number not in teller.accounts.keys():
+            if to_account_number not in bank.accounts.keys():
                 new_choice = input("There is no account found with that number. Would you like to open one? (y/n) ").strip().lower()
                 while new_choice not in ['yes', 'no', 'y', 'n']:
                     new_choice = input("Please enter 'yes' or 'no': ")
 
                 # Make a new account if desired or give up on the transfer
                 if new_choice in ['yes', 'y']:
-                    to_account = teller.open_account(number=to_account_number)
+                    to_account = bank.open_account(number=to_account_number)
                     print("\nWelcome to your new account!")
                     print("  - Account Number: {}".format(str(to_account)))
                     print("  - PIN: {}\n".format(to_account.pin))
@@ -522,7 +502,7 @@ if __name__ == "__main__":
 
             # Execute transfer
             try:
-                teller.make_wire(account, teller.accounts[to_account_number], amount)
+                bank.make_wire(account, bank.accounts[to_account_number], amount)
                 print("Transfer successful. New balance is ${0:.2f}\n".format(account.balance))
             except AssertionError:
                 print("You must specify a positive numeric value to transfer.")
@@ -534,8 +514,8 @@ if __name__ == "__main__":
         # Close account and log out
         elif choice == 'e':
             try:
-                teller.close_account(account)
-                account = connect(teller)
+                bank.close_account(account)
+                account = connect(bank)
             except YaBrokeException:
                 print("You cannot close an account with a negative balance.\n")
 
