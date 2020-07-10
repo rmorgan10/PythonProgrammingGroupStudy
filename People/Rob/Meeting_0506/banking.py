@@ -91,6 +91,7 @@ class Bank:
         Create a new account. Generate a new account number and PIN. 
         Add the account to the database.
 
+        :param number: str, the account number to open
         :return: account: An Account instance for the object just created
         """
         # Make a new account
@@ -182,6 +183,7 @@ class Bank:
 
         :param account: Account, the account to make the transaction with
         :param amount: float, the amount of the transaction
+        :param how: str, (add or subtract) the type of transaction
         """
         t = Transaction(account, how=how)
         t.amount = amount
@@ -211,7 +213,7 @@ class Account:
     def __str__(self):
         """
         Reimplement the str method for accounts. I doubt I'll actually use
-        this in the code but why not.
+        this in the code but why not. Fun fact: I did!
         """
         return str(self.number)
 
@@ -314,10 +316,11 @@ def menu():
     print("  c) View balance")
     print("  d) Transfer funds to another account")
     print("  e) Close your account")
+    print("  f) Log out")
     print("  q) Quit\n")
     choice = input("Your choice: ").strip().lower()
-    while choice not in ['a', 'b', 'c', 'd', 'e', 'q']:
-        print("You must choose from ['a', 'b', 'c', 'd', 'e', 'q'].")
+    while choice not in ['a', 'b', 'c', 'd', 'e', 'f', 'q']:
+        print("You must choose from ['a', 'b', 'c', 'd', 'e', 'f', 'q'].")
         choice = input("Your choice: ").strip().lower()
 
     return choice
@@ -519,6 +522,10 @@ if __name__ == "__main__":
             except YaBrokeException:
                 print("You cannot close an account with a negative balance.\n")
 
+        # Log out
+        elif choice == 'f':
+            account = connect(bank)
+            
         # The code should never get here
         else:
             raise YaSuckAtCodingError
