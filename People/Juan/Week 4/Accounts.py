@@ -7,6 +7,7 @@ This file stores account classes
 from typing import List
 import random
 import pickle
+from decimal import Decimal
 # This is filthy, BUT we only use Transaction here to it's ok. I promise.
 from Transactions import DirectedTransaction as Transaction
 
@@ -14,7 +15,7 @@ from Transactions import DirectedTransaction as Transaction
 class Account:
 
 	MIN_NAME = 4  # Minimum name length
-	EXTENSION = "acc"
+	EXTENSION = ".acc"
 
 	def __init__(self, name):
 		self.__number = self.create_account_number()
@@ -48,6 +49,9 @@ class Account:
 		for transaction in self.transactions:
 			sign = 1 if transaction.receiving_account == self.__number else -1
 			balance += sign*transaction.usd
+		# The bank has infinite money
+		if self.name == "Bank":
+			balance = Decimal('Infinity')
 		return balance
 
 	@property
@@ -80,8 +84,8 @@ class Account:
 		Returns:
 			The filename for the file this class was saved to
 		"""
-		fname = f"{self.account_number}.{Account.EXTENSION}"
-		with open(fname,"ab") as account_file:
+		fname = f"{self.account_number}{Account.EXTENSION}"
+		with open(fname, "ab") as account_file:
 			pickle.dump(self, account_file)
 		return fname
 
