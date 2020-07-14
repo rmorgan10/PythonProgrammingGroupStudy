@@ -61,6 +61,9 @@ class Transaction(Money):
 	def usd(self):
 		return Decimal(float(self.amount)*self.usd_conversion).quantize(Decimal('1.00'))
 
+	def __repr__(self):
+		return f"Transaction {self.amount} {self.currency} on {self.transaction_date}"
+
 
 class DirectedTransaction(Transaction):
 	"""
@@ -97,6 +100,12 @@ class DirectedTransaction(Transaction):
 	@property
 	def receiving_account(self):
 		return self.__receiving
+
+	def __repr__(self):
+		ms = super(DirectedTransaction, self).__repr__()
+		ms += f"\nFrom Account {self.sending_account}\nTo Account {self.receiving_account}\n"
+		return ms
+
 
 
 

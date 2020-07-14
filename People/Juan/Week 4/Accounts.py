@@ -8,6 +8,7 @@ from typing import List
 import random
 import pickle
 from decimal import Decimal
+import os
 # This is filthy, BUT we only use Transaction here to it's ok. I promise.
 from Transactions import DirectedTransaction as Transaction
 
@@ -16,10 +17,11 @@ class Account:
 
 	MIN_NAME = 4  # Minimum name length
 	EXTENSION = ".acc"
+	BANK = "Bank"
 
 	def __init__(self, name):
-		self.__number = self.create_account_number()
 		self.name = name
+		self.__number = self.create_account_number()
 		self.transactions: List[Transaction] = []
 
 	@property
@@ -48,9 +50,9 @@ class Account:
 		balance = 0
 		for transaction in self.transactions:
 			sign = 1 if transaction.receiving_account == self.__number else -1
-			balance += sign*transaction.usd
+			balance += sign*transaction.usd*transaction.completed
 		# The bank has infinite money
-		if self.name == "Bank":
+		if self.name == Account.BANK:
 			balance = Decimal('Infinity')
 		return balance
 
@@ -58,12 +60,18 @@ class Account:
 	def all_usd(self) -> bool:
 		return all(transaction.currency == "USD" for transaction in self.transactions)
 
-	def create_account_number(self):
+	@property
+	def account_file(self):
+		return f"{self.account_number}{Account.EXTENSION}"
+
+	def create_account_number(self) -> int:
 		"""
 		Should generate a 10 digit account number.
 		Returns:
 			int : the account number
 		"""
+		if self.name == Account.BANK:
+			return 0
 		random.seed(self.name)
 		return 10**10 + random.randint(0, 10**9-1)
 
@@ -78,29 +86,38 @@ class Account:
 				"This account is not involved in the desired transaction. Transaction Cancelled"
 			)
 
-	def save(self) -> str:
+	def save(self):
 		"""
 		Saves this account to a .acc file
 		Returns:
 			The filename for the file this class was saved to
 		"""
-		fname = f"{self.account_number}{Account.EXTENSION}"
-		with open(fname, "ab") as account_file:
-			pickle.dump(self, account_file)
-		return fname
+		with open(self.account_file, "wb") as file:
+			pickle.dump(self, file)
+
+	def destroy(self):
+		"""
+		Destroys this account's file.
+		Only call this function if account is also being deleted
+		"""
+		os.remove(self.account_file)
 
 	@staticmethod
-	def load(account_filename: str) -> Account:
+	def load(account_number: int):
 		"""
 		Loads an account from the text_file account_filename
 		Args:
-			account_filename : filename of account to be loaded
+			account_number : number associated with the account
 		Returns:
 			Account loaded from file
 		"""
+		account_filename = f"{account_number}{Account.EXTENSION}"
 		with open(account_filename, "rb") as account_file:
 			loaded_account = pickle.load(account_file)
 		return loaded_account
 
 	def __len__(self):
 		return len(self.transactions)
+
+	def __repr__(self):
+		return f"Account {self.account_number} ; {self.name}"

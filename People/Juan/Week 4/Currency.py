@@ -9,7 +9,8 @@ class Money:
 
 	"""
 
-	CURRENCIES_FILENAME = "currency_codes.csv"
+	CURRENCIES_FILENAME = \
+		r"C:\Users\Juan\Repos\PythonProgrammingGroupStudy\People\Juan\Week 4\currency_codes.csv"
 
 	def __init__(self, amount: Decimal, currency_code: str = "USD"):
 		if currency_code.upper() not in self._currency_codes:
@@ -27,7 +28,7 @@ class Money:
 
 	@property
 	def quantizer(self):
-		return Decimal("1."+"0"*get_minor_unit(self.__currency_code))
+		return Decimal("1."+"0"*get_minor_unit(self.__currency_code, Money.CURRENCIES_FILENAME))
 
 	@property
 	def currency(self):
