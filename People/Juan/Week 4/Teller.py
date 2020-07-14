@@ -226,7 +226,7 @@ Welcome to {account}! What would you like to do?
 				message = f"That was not a valid amount. Please input a valid float\n{base_message}"
 				continue
 			if quantity > 0:
-				if quantity*conversion > self._accounts[sender].balance:
+				if float(quantity)*conversion > float(self._accounts[sender].balance):
 					message = \
 						f"account {sender} does not have sufficient funds to complete this transaction\n{base_message}"
 					continue
@@ -283,7 +283,7 @@ Welcome to {account}! What would you like to do?
 
 		# get the currency
 		user_choice = self.input(f"Will this transaction be in USD? Y/n :").upper()
-		if user_choice == "n":
+		if user_choice == "N":
 			currency = self.get_currency("What currency will this transaction be in? : ")
 			conversion = self.get_conversion(f"What is {currency}'s conversion to USD? :")
 		else:
@@ -320,7 +320,7 @@ Welcome to {account}! What would you like to do?
 
 		# get the currency
 		user_choice = self.input(f"Will this transaction be in USD? Y/n : ").upper()
-		if user_choice == "n":
+		if user_choice == "N":
 			currency = self.get_currency("What currency will this transaction be in? : ")
 			conversion = self.get_conversion(f"What is {currency}'s conversion to USD? : ")
 		else:
