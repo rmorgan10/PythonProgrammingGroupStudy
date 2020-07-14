@@ -16,6 +16,7 @@ class Money:
 		if currency_code.upper() not in self._currency_codes:
 			raise ValueError(f"{currency_code} is not a valid currency code")
 		self.__currency_code = currency_code
+		assert amount > 0, "Cannot create negative money."
 		self.__amount = amount.quantize(self.quantizer)
 
 	@property

@@ -236,7 +236,7 @@ class Bank:
 
 	def find_account(self, account_name: str) -> int:
 		"""
-		Attributes:
+		Args:
 			account_name : name of account to be returned
 		Returns:
 			Account number of specified account. -1 if account was not found
@@ -250,4 +250,7 @@ class Bank:
 
 	def __len__(self):
 		return len(self.accounts)
+
+	def __repr__(self):
+		return "Juan's super cool bank. Today's exclusive offer is $100 for opening an account today!"
 
