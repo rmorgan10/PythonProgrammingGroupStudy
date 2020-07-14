@@ -18,7 +18,7 @@ class Account:
 	MIN_NAME = 4  # Minimum name length
 	EXTENSION = "acc"
 	BANK = "Bank"
-	PATH = r"C:\Users\Juan\Repos\PythonProgrammingGroupStudy\People\Juan\Week 4\bank_accounts"
+	PATH = os.path.join(os.getcwd(), "bank_accounts")
 
 	def __init__(self, name):
 		self.name = name

@@ -18,6 +18,10 @@ class QuitError(Exception):
 	pass
 
 
+class LogOutError(Exception):
+	pass
+
+
 class Teller:
 	"""
 	Class to interact with the user, and bank.
@@ -40,7 +44,7 @@ class Teller:
 		"""
 		Clears the bank's status flag and gives us debugging info
 		"""
-		self.logger.info(f"Logger info : {self._bank.status}")
+		self.logger.debug(f"Logger info : {self._bank.status}")
 
 	def input(self, msg: str):
 		"""
@@ -92,7 +96,7 @@ Welcome to {self._bank}.\nWhat would you like to do?
 			ac_name = self.input("To log into your account, input the account name : ")
 			account_no = self._bank.find_account(ac_name)
 			if account_no > 0:
-				print(f"Logging you in to your account! {self._accounts[acc_no]}")
+				print(f"Logging you in to your account! {self._accounts[account_no]}")
 				return account_no
 			else:
 				print(f"{self._bank.status}\n")
@@ -103,8 +107,10 @@ Welcome to {self._bank}.\nWhat would you like to do?
 		Returns:
 			account number of account user creates
 		"""
+		base_message = "To create an account, input your desired name for the account : "
+		message = base_message
 		while True:
-			ac_name = self.input("To create an account, input your desired name for the account : ")
+			ac_name = self.input(message)
 			success, account_no = self._bank.create_account(ac_name)
 			if success:
 				print(f"{self._bank.status}\nLogging you into your new account!")
@@ -117,6 +123,8 @@ Welcome to {self._bank}.\nWhat would you like to do?
 				self._bank.complete_transaction(deal)
 				input(self._bank.status)
 				return account_no
+			else:
+				message = f"{self._bank.status}\n\n{base_message}"
 
 	def manage_account(self, account_number: int):
 		"""
@@ -152,7 +160,7 @@ Welcome to {account}! What would you like to do?
 				break
 
 		if usr_choice == check_balance:
-			print(f"Your current balance is : ${account.balance} (USD)")
+			input(f"Your current balance is : ${account.balance} (USD)")
 		if usr_choice == transfer_to:
 			self.pay(account_number)
 		if usr_choice == transfer_from:
@@ -161,7 +169,7 @@ Welcome to {account}! What would you like to do?
 			self.delete(account_number)
 		if usr_choice == log_out:
 			account.save()
-			return
+			raise LogOutError
 
 	def get_account(self, base_message) -> int:
 		"""
@@ -258,20 +266,20 @@ Welcome to {account}! What would you like to do?
 			account_number : number of the user's account
 		"""
 		# first get the account number
-		base_message = "Enter the account number of the account that will receive your transfers"
+		base_message = "Enter the account number of the account that will receive your transfer : "
 		receiver = self.get_account(base_message)
 
 		# get the currency
 		user_choice = self.input(f"Will this transaction be in USD? Y/n :").upper()
 		if user_choice == "n":
 			currency = self.get_currency("What currency will this transaction be in? : ")
-			conversion = self.get_conversion(f"What is {currency}'s conversion to USD?")
+			conversion = self.get_conversion(f"What is {currency}'s conversion to USD? :")
 		else:
 			currency, conversion = ("USD", 1)
 
 		# now get the quantity
 		base_message = \
-			f"Enter the amount (in {currency}) you would like to transfer to account {receiver}"
+			f"Enter the amount (in {currency}) you would like to transfer to account {receiver} : "
 		quantity = self.get_amount(base_message, account_number, conversion)
 
 		# and the description
@@ -295,20 +303,20 @@ Welcome to {account}! What would you like to do?
 			account_number : number of the user's account
 		"""
 		# first get the account number
-		base_message = "Enter the account number of the account that will be transferring you money"
+		base_message = "Enter the account number of the account that will be transferring you money : "
 		sender = self.get_account(base_message)
 
 		# get the currency
-		user_choice = self.input(f"Will this transaction be in USD? Y/n :").upper()
+		user_choice = self.input(f"Will this transaction be in USD? Y/n : ").upper()
 		if user_choice == "n":
 			currency = self.get_currency("What currency will this transaction be in? : ")
-			conversion = self.get_conversion(f"What is {currency}'s conversion to USD?")
+			conversion = self.get_conversion(f"What is {currency}'s conversion to USD? : ")
 		else:
 			currency, conversion = ("USD", 1)
 
 		# now get the quantity
 		base_message = \
-			f"Enter the amount (in {currency}) you would like to have transferred from {sender}"
+			f"Enter the amount (in {currency}) you would like to have transferred from {sender} : "
 		quantity = self.get_amount(base_message, sender, conversion)
 
 		# and the description
@@ -334,7 +342,7 @@ Welcome to {account}! What would you like to do?
 		last_chance = self.input(
 			f"Are you sure you wish to delete account {account_number}? y/N :"
 		)[0].upper()
-		if last_chance == "y":
+		if last_chance == "Y":
 			self._bank.delete_account(account_number)
 			input(self._bank.status)
 		else:
@@ -347,9 +355,13 @@ if __name__ == "__main__":
 	teller = Teller(my_bank)
 
 	try:
-		acc_no = teller.begin()
 		while True:
-			teller.manage_account(acc_no)
+			acc_no = teller.begin()
+			try:
+				while True:
+					teller.manage_account(acc_no)
+			except LogOutError:
+				continue
 	except QuitError:
 		my_bank.close()
 		print(my_bank.status)

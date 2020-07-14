@@ -6,6 +6,8 @@ Stores accounts, verifies transactions
 
 from typing import List, Dict, Tuple
 import csv
+import os
+
 from Accounts import Account
 from Transactions import Transaction, DirectedTransaction
 
@@ -16,7 +18,8 @@ class Bank:
 	"""
 
 	BANK = Account.BANK
-	BANK_FILE = "Bank.bk"
+	BANK_PATH = os.getcwd()
+	BANK_FILE = os.path.join(BANK_PATH, "Bank.bk")
 	BANK_CATEGORIES = ["account_number", "name", "balance"]
 
 	def __init__(self, default_currency="USD"):
@@ -82,7 +85,7 @@ class Bank:
 			self._status += failure + " Sending account was not found in this bank"
 			return False
 
-		if self.__accounts[sending_account].balance > transaction.usd:
+		if self.__accounts[sending_account].balance >= transaction.usd:
 			self._status += success
 			return True
 		else:
@@ -168,7 +171,11 @@ class Bank:
 		self._status += "\n"
 
 		while True:
-			account = Account(name)
+			try:
+				account = Account(name)
+			except AssertionError as e:
+				self._status = f"{e}"
+				return False, -1
 			if account.account_number not in self.accounts.keys():
 				verified = self._add_account(account)
 				if verified:
@@ -206,6 +213,9 @@ class Bank:
 				self._status += f"Someone Has messed with {account}. Account Not loaded.\n" \
 									f"loaded : {loaded_attributes}\n" \
 									f"expected : {account_attributes}"
+
+		if 0 not in self.__accounts.keys():
+			self._add_account(Account(self.BANK))
 
 	def delete_account(self, account_number: int):
 		"""
