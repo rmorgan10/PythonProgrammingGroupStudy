@@ -1,5 +1,7 @@
 from typing import List
 import csv
+import os
+
 from decimal import Decimal
 
 
@@ -9,9 +11,8 @@ class Money:
 
 	"""
 
-	CURRENCIES_FILENAME = \
-		r"C:\Users\Juan\Repos\PythonProgrammingGroupStudy\People\Juan\Week 4\currency_codes.csv"
-
+	CURRENCIES_FILENAME = os.path.join(os.getcwd(),"currency_codes.csv")
+	
 	def __init__(self, amount: Decimal, currency_code: str = "USD"):
 		if currency_code.upper() not in self._currency_codes:
 			raise ValueError(f"{currency_code} is not a valid currency code")
