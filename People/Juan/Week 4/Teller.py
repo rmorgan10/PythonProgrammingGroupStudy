@@ -34,6 +34,18 @@ class Teller:
 		self.logger = logging.getLogger(self.__class__.__name__)
 		self.logger.setLevel(logging.DEBUG)
 		self._bank = bank
+
+		if not len(self._bank):
+			for i in range(20):
+				nm = f"ac_{i}"
+				success, ac_no = bank.create_account(nm)
+				print(bank.status)
+				if ac_no > 0:
+					bank.complete_transaction(
+						Transaction(Decimal("100.00"), 0, ac_no)
+					)
+					print(bank.status)
+			input()
 		self.clr()
 
 	@property
