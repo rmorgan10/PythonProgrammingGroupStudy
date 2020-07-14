@@ -3,6 +3,8 @@
 """
 Teller will interface with the user, serve as intermediary between the user and the bank
 """
+import logging
+
 from Bank import Bank
 from Accounts import Account
 from Transactions import DirectedTransaction
@@ -23,7 +25,7 @@ class Teller:
 		"""
 		Prompt the user to create an account, log in to their account, then manage their account
 		"""
-		pass
+
 
 	def manage_account(self):
 		"""
@@ -36,3 +38,12 @@ class Teller:
 		pass
 
 
+if __name__ == "__main__":
+	logger = logging.getLogger(__name__)
+	logger.setLevel(logging.DEBUG)
+
+	my_bank = Bank()
+	logger.debug(my_bank.status)
+
+	teller = Teller(my_bank)
+	teller.log_in()

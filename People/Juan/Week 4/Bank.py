@@ -30,6 +30,10 @@ class Bank:
 		return {ac_n: ac for ac_n, ac in self.__accounts.items() if ac_n}
 
 	@property
+	def secret_accounts(self):
+		return self.__accounts
+
+	@property
 	def status(self) -> str:
 		"""
 		Attribute to store status of last operation.
@@ -69,20 +73,20 @@ class Bank:
 		failure = f"{transaction} could not be completed."
 
 		if receiving_account is None:
-			self._status += failure + "No receiving account was provided."
+			self._status += failure + " No receiving account was provided."
 			return False
 		if receiving_account not in self.__accounts.keys():
-			self._status += failure + "Receiving account was not found in this bank"
+			self._status += failure + " Receiving account was not found in this bank"
 			return False
 		if sending_account not in self.__accounts.keys():
-			self._status += failure + "Sending account was not found in this bank"
+			self._status += failure + " Sending account was not found in this bank"
 			return False
 
 		if self.__accounts[sending_account].balance > transaction.usd:
 			self._status += success
 			return True
 		else:
-			self._status += failure + f"Balance of account {sending_account} is not sufficient"
+			self._status += failure + f" Balance of account {sending_account} is not sufficient"
 			return False
 
 	def complete_transaction(
@@ -137,35 +141,40 @@ class Bank:
 			self.__accounts.update({account.account_number: account})
 		except Exception as e:
 			self._status += f"{type(e)} : {e}\n" + failure
+			return False
 
-		self._status = success
+		self._status += success
 		return True
 
-	def create_account(self, name: str) -> bool:
+	def create_account(self, name: str) -> Tuple[bool, int]:
 		"""
 		Creates an account and adds it to this banks list of accounts.
 		Args:
 			name : name for the bank account
 
 		Returns:
-			(verified, message)
+			(verified, account_number)
 				verified : was the account successfully added
-				message : message detailing success or reason for failure
+				account_number : number off account added. -1 if addition is unsuccessful
 		"""
 		failure = f"Account {name} could not be created."
 
 		if name == Bank.BANK:
-			self._status += failure + f"{Bank.BANK} is not an allowed account name"
-			return False
+			self._status += failure + f" {Bank.BANK} is not an allowed account name"
+			return False, -1
+		if self.find_account(name) > 0:
+			self._status += f"\n{failure} Another account is already using the name {name}"
+			return False, -1
+		self._status += "\n"
 
 		while True:
 			account = Account(name)
 			if account.account_number not in self.accounts.keys():
 				verified = self._add_account(account)
 				if verified:
-					return True
+					return True, account.account_number
 				else:
-					return False
+					return False, -1
 			else:
 				print(f"{account.account_number} is in {self.accounts.keys()}")
 
@@ -178,14 +187,16 @@ class Bank:
 				bank_accounts = list(csv.reader(bank_file))
 		except FileNotFoundError:
 			bank_account = Account(Bank.BANK)
-			bank_accounts = [
-				Bank.BANK_CATEGORIES,
-				[getattr(bank_account, category) for category in Bank.BANK_CATEGORIES]
-			]
+			self._add_account(bank_account)
+			return
 
 		for account_attributes in bank_accounts[1:]:
 			atr_dict = dict(zip(bank_accounts[0], account_attributes))
-			account = Account.load(int(atr_dict["account_number"]))
+			try:
+				account = Account.load(int(atr_dict["account_number"]))
+			except FileNotFoundError:
+				self._status += "Account file not found. Account not loaded"
+				continue
 			loaded_attributes = [
 				str(getattr(account, category)) for category in Bank.BANK_CATEGORIES]
 			if account_attributes == loaded_attributes:
@@ -228,11 +239,14 @@ class Bank:
 		Attributes:
 			account_name : name of account to be returned
 		Returns:
-			Account number of specified account
+			Account number of specified account. -1 if account was not found
 		"""
 		for account_number, account in self.accounts.items():
 			if account_name == account.name:
+				self._status += f"{account} found."
 				return account_number
+		self._status += f"No account with name {account_name} was found"
+		return -1
 
 	def __len__(self):
 		return len(self.accounts)

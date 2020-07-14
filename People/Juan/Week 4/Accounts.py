@@ -16,8 +16,9 @@ from Transactions import DirectedTransaction as Transaction
 class Account:
 
 	MIN_NAME = 4  # Minimum name length
-	EXTENSION = ".acc"
+	EXTENSION = "acc"
 	BANK = "Bank"
+	PATH = r"C:\Users\Juan\Repos\PythonProgrammingGroupStudy\People\Juan\Week 4\bank_accounts"
 
 	def __init__(self, name):
 		self.name = name
@@ -62,7 +63,7 @@ class Account:
 
 	@property
 	def account_file(self):
-		return f"{self.account_number}{Account.EXTENSION}"
+		return f"{self.PATH}\\{self.account_number}.{Account.EXTENSION}"
 
 	def create_account_number(self) -> int:
 		"""
@@ -72,7 +73,6 @@ class Account:
 		"""
 		if self.name == Account.BANK:
 			return 0
-		random.seed(self.name)
 		return 10**10 + random.randint(0, 10**9-1)
 
 	def apply(self, new_transaction: Transaction):
@@ -111,7 +111,7 @@ class Account:
 		Returns:
 			Account loaded from file
 		"""
-		account_filename = f"{account_number}{Account.EXTENSION}"
+		account_filename = f"{Account.PATH}\\{account_number}.{Account.EXTENSION}"
 		with open(account_filename, "rb") as account_file:
 			loaded_account = pickle.load(account_file)
 		return loaded_account
