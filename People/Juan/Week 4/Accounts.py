@@ -9,6 +9,8 @@ import random
 import pickle
 from decimal import Decimal
 import os
+from pathlib import Path
+
 # This is filthy, BUT we only use Transaction here to it's ok. I promise.
 from Transactions import DirectedTransaction as Transaction
 
@@ -92,6 +94,8 @@ class Account:
 		Returns:
 			The filename for the file this class was saved to
 		"""
+		Path(self.PATH).mkdir(parents=True,exist_ok=True)
+
 		with open(self.account_file, "wb") as file:
 			pickle.dump(self, file)
 
