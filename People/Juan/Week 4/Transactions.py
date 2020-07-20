@@ -59,7 +59,7 @@ class Transaction(Money):
 
 	@property
 	def usd(self):
-		return Decimal(float(self.amount)*self.usd_conversion).quantize(Decimal('1.00'))
+		return Decimal(float(self.amount)*self.usd_conversion).quantize(Decimal(self.quantizer))
 
 	def __repr__(self):
 		return f"Transaction {self.amount} {self.currency} on {self.transaction_date}"
