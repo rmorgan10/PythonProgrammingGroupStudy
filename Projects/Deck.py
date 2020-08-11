@@ -3,29 +3,30 @@ Collection class for QuizItems
 """
 
 from collections.abc import Iterable
-from typing import Iterator, _T_co, List, Union
+from typing import Iterator, List, Union
 
 from QuizItem import QuizItem
+
+import pandas as pd
+import os
 
 
 class Deck(Iterable):
 
-	def __init__(self, cards: List[QuizItem] = None):
+	def __init__(self, cards: List[QuizItem] = None, load_item: bool = True):
 		self.cards: List[QuizItem] = [] if cards is None else cards
-		# pass
+		if load_item:
+			self.load() 
 
-	def __iter__(self) -> Iterator[_T_co]:
-		pass
+	def __iter__(self) -> Iterator:
+		return self.cards.__iter__()
 
 	def affix(self, new_card: QuizItem):
 		if not isinstance(new_card, QuizItem):
 			raise TypeError("only QuizItems can be added to the deck")
 		self.cards.append(new_card)
 
-	def sort_by_words(self):
-		pass
-
-	def sort_by(self, attribute: str, reverse: bool, in_place: bool) :
+	def sort_by(self, attribute: str, reverse: bool, in_place: bool):
 		"""
 		Sorts our deck by attribute. Stable.
 		Args:
@@ -55,3 +56,29 @@ class Deck(Iterable):
 				key=lambda card: getattr(card, attribute),
 				reverse=reverse
 			))
+        
+	def load(self):
+		"""
+		Load cards from CSV File as pandas dataframe
+		Columns: word, answer, Date created, date edited, difficulty 
+		"""
+		file = "generic_file_name.csv"
+		if os.path.exists(file):
+			df = pd.read_csv(file)
+			#print(df.head())
+			for index, row in df.iterrows():
+				print(row, index)
+				self.affix(QuizItem(**dict(row)))
+    
+	def save(self):
+		"""
+		Save cards to CSV File
+		"""
+		file = "generic_file_name.csv"
+		dict_to_save = {slot.replace("__",""):[] for slot in QuizItem.__slots__}
+		for card in self.cards: 
+			for key in dict_to_save.keys():
+				print(key)
+				dict_to_save[key].append(getattr(card, key))
+		df = pd.DataFrame(dict_to_save)
+		df.to_csv(file, index=False)
