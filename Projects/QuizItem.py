@@ -14,12 +14,14 @@ class QuizItem:
     __slots__ = ('__word', '__answer', '__date_created', '__date_edited', '__difficulty')
     
     def __init__(self, word, answer, difficulty=0, date_created=None, date_edited=None):
+        
         self.date_created = date_created if date_created is not None else datetime.datetime.now()
         self.date_edited = date_edited if date_edited is not None else datetime.datetime.now()
 
         self.word = word
         self.answer = answer
         self.__difficulty = difficulty
+        
 
     @property
     def difficulty(self):
@@ -80,6 +82,20 @@ class QuizItem:
             self.__date_edited = value
         else:
             self.__date_edited = value
-
+         
     def update_difficulty(self, correct: bool):
         self.__difficulty += int(not correct)
+        
+    def __repr__(self):
+        return (f"QuizItem(word={self.word}, "
+                f"answer={self.answer}, "
+                f"date_created={self.date_created}, "
+                f"date_edited={self.date_edited}, "
+                f"difficulty={self.difficulty})")
+    
+    def __str__(self):
+        return f"QuizItem: word='{self.word}' answer='{self.answer}'"
+        
+        
+        
+    

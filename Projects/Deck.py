@@ -26,7 +26,7 @@ class Deck(Iterable):
 			raise TypeError("only QuizItems can be added to the deck")
 		self.cards.append(new_card)
 
-	def sort_by(self, attribute: str, reverse: bool, in_place: bool):
+	def sort_by(self, attribute: str, reverse: bool = False, in_place: bool = True):
 		"""
 		Sorts our deck by attribute. Stable.
 		Args:
@@ -64,10 +64,8 @@ class Deck(Iterable):
 		"""
 		file = "generic_file_name.csv"
 		if os.path.exists(file):
-			df = pd.read_csv(file)
-			#print(df.head())
+			df = pd.read_csv(file, delimiter='~')
 			for index, row in df.iterrows():
-				print(row, index)
 				self.affix(QuizItem(**dict(row)))
     
 	def save(self):
@@ -78,7 +76,6 @@ class Deck(Iterable):
 		dict_to_save = {slot.replace("__",""):[] for slot in QuizItem.__slots__}
 		for card in self.cards: 
 			for key in dict_to_save.keys():
-				print(key)
 				dict_to_save[key].append(getattr(card, key))
-		df = pd.DataFrame(dict_to_save)
+		df = pd.DataFrame(dict_to_save, delimiter='~')
 		df.to_csv(file, index=False)
